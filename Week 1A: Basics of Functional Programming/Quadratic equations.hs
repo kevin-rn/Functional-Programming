@@ -15,3 +15,10 @@ prop_quadradic_solutions :: Property
 prop_quadradic_solutions = quadratic_solutions 1 0 (-9) === [3,-3]
 
 -- solution
+quadratic_solutions :: Double -> Double -> Double -> [Double]
+quadratic_solutions a b c  = if d < 0 then [] else [x]++[y]
+                              where
+                                x = (-b + sqrt d) / (2 * a)
+                                y = (-b - sqrt d) / (2 * a)
+                                d = b ^ 2 - 4 * a * c
+                                
