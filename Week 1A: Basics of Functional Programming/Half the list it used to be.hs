@@ -1,4 +1,4 @@
--{
+{-
 Using library functions, define a function halve :: [a] -> ([a],[a]) that splits an even-lengthed list into two halves. For example:
 
 > halve [1,2,3,4,5,6]
@@ -12,7 +12,7 @@ Hint: Some of the following library functions may come in handy:
 - take :: Int -> [a] -> [a]
 - drop :: Int -> [a] -> [a]
 - mod :: Int -> Int -> Int
-}-
+-}
 
 halve xs = undefined
 
