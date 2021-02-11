@@ -29,11 +29,13 @@ sum_of_squares = undefined
 
 
 -- Test
-
+prop_sum_of_squares :: Property
+prop_sum_of_squares = sum_of_squares 3 === 14
 
 
 -- Solution
-
+sum_of_squares :: Int -> Int
+sum_of_squares n = sum [x^2 | x <- [1..n]]
 
 ```
 
@@ -52,11 +54,13 @@ replicate n e = undefined
 
 
 -- Test
-
+prop_replicate :: Property
+prop_replicate = replicate 1 True === [True]
 
 
 -- Solution
-
+replicate :: Int -> a -> [a]
+replicate n e = [e | _ <- [1..n]]
 
 ```
 
@@ -71,16 +75,17 @@ Implement a function remove :: Int -> [a] -> [a] which takes a number n and a li
 Hint. Make use of the library functions take and drop.
 
 ```haskell
-
-
-
--- Test
 remove :: Int -> [a] -> [a]
 remove n xs = undefined
 
 
--- Solution
+-- Test
+prop_remove :: Property
+prop_remove = remove 1 [1,2,3,4] === [1,3,4]
 
+-- Solution
+remove :: Int -> [a] -> [a]
+remove n xs = (take n xs) ++ (drop (n+1) xs) 
 
 ```
 
@@ -98,11 +103,13 @@ pyths n = undefined
 
 
 -- Test
-
+prop_pyths :: Property
+prop_pyths = (pyths 10) === [(3,4,5),(4,3,5),(6,8,10),(8,6,10)]
 
 
 -- Solution
-
+pyths :: Int -> [(Int,Int,Int)]
+pyths n = [(a,b,c) | a <- [1..n], b <- [1..n], c <- [1..n], a^2 + b^2 == c^2]
 
 ```
 
@@ -123,11 +130,15 @@ perfects n = undefined
 
 
 -- Test
-
-
+prop_perfects :: Property
+prop_perfects = perfects 500 === [6,28,496]
 
 -- Solution
+factors :: Int -> [Int]
+factors n = [x | x <- [1..(n-1)], n `mod` x == 0]
 
+perfects :: Int -> [Int]
+perfects n = [i | i <- [1..n], sum(factors i) == i] 
 
 ```
 
@@ -147,10 +158,12 @@ scalarproduct ns ms = undefined
 
 
 -- Test
-
-
+prop_scalar :: Property
+prop_scalar = (scalarproduct [1,2,3] [4,5,6]) === 32
 
 -- Solution
+scalarproduct :: [Int] -> [Int] -> Int
+scalarproduct ns ms = if length ns == length ms then sum [x*y | (x, y) <- zip ns ms] else 0
 
 
 ```
@@ -171,10 +184,13 @@ riffle ns ms = undefined
 
 
 -- Test
-
+prop_riffle :: Property
+prop_riffle = (riffle [1,2,3] [4,5,6]) === [1,4,2,5,3,6]
 
 
 -- Solution
+riffle :: [a] -> [a] -> [a]
+riffle ns ms = concat [a:b:[] | (a,b) <- zip ns ms]
 
 
 ```
@@ -195,11 +211,13 @@ divisors n = undefined
 
 
 -- Test
-
+prop_divisors :: Property
+prop_divisors = (divisors 15) === [1,3,5,15]
 
 
 -- Solution
-
+divisors :: Int -> [Int]
+divisors n = [x | x<- [1..n], n `rem` x == 0]
 
 ```
 
@@ -227,10 +245,19 @@ square n = undefined
 
 
 -- Test
+prop_grid :: Property
+prop_grid = (grid 1 2) === [(0,0),(0,1),(0,2),(1,0),(1,1),(1,2)]
 
+prop_square :: Property
+prop_square = (square 2) === [(0,1),(0,2),(1,0),(1,2),(2,0),(2,1)]
 
 
 -- Solution
+grid :: Int -> Int -> [(Int,Int)]
+grid m n = [(a,b) | a <- [0..m], b <- [0..n]]
+
+square :: Int -> [(Int,Int)]
+square n = [(a,b) | a <- [0..n], b <- [0..n], a /= b]
 
 
 ```
@@ -256,11 +283,18 @@ Write a function histogram :: [Int] -> String that takes a list of integers betw
 Note that you must use putStr to actually visualize the histogram if you are testing your code in ghci, otherwise you get a textual representation of the string such as "* *\n==========\n0123456789\n". Here on Weblab, the use of putStr is not required.
 
 ```haskell
--- Test
-
-
-
 -- Solution
+frequencyx :: [Int] -> [Int]
+frequencyx xs = map (\n -> length (filter (== n) xs)) [0..9]
+
+line :: [Int] -> Int -> String
+line xs y = map (\x -> if x >= y then '*' else ' ') xs
+
+histogram :: [Int] -> String
+histogram xs = rows ++ "==========\n0123456789\n"
+    where f = frequencyx xs
+          m = maximum f
+          rows = unlines (map (line f) [m, m-1..1])
 
 
 ```
@@ -278,11 +312,17 @@ skips [[True,False],[False]]
 Bonus challenge. Try to find the shortest possible solution by making use of library functions such as map and foldr.
 
 ```haskell
--- Test
-
-
-
 -- Solution
+ith_elements i c [] = []
+ith_elements i c (x:xs) 
+   | c < i = (ith_elements i (c+1) xs)
+   | otherwise = [x] ++ (ith_elements i 0 xs)
 
+helper c xs 
+   | c < length xs = [ith_elements c 0 xs] ++ (helper (c+1) xs)
+   | otherwise = []
+
+skips [] = []
+skips (x:xs) = helper 0 (x:xs)
 
 ```
