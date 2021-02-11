@@ -220,9 +220,30 @@ luhn :: [Int] -> Bool
 luhn = undefined
 
 -- Test
+xs :: [Int]
+xs = [7,9,9,2,7,3,9,8,7,1,3]
+
+ys :: [Int]
+ys = [4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+prop_luhn :: Property
+prop_luhn = luhn xs === True
+
+prop_luhn1 :: Property
+prop_luhn1 = luhn ys === True
 
 -- Solution
+helper :: [Int] -> [Int]
+helper [] = []
+helper [x] = [x]
+helper (x:y:z) = if double > 9 then x:(double-9):list
+                     else x:double:list
+                      where
+                        double = y*2 
+                        list = helper z
 
+luhn :: [Int] -> Bool
+luhn xs = sum (helper (reverse xs)) `mod` 10 == 0
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
