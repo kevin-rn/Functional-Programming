@@ -11,9 +11,12 @@ third2 xs = undefined
 third3 xs = undefined
 
 -- Test
+prop_third1 :: Property
+prop_third1 = third1 [1,2,3] === 3
 
 -- Solution
-
+prop_third1 :: Property
+prop_third1 = third1 [1,2,3] === 3
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
@@ -22,11 +25,10 @@ ________________________________________________________________________________
 Implement a function product that produces the product of a list of numbers. For example, product [2,3,4] = 24.
 
 ```haskell
-
--- Test
-
 -- Solution
-
+product :: Num a => [a] -> a
+product [] = 1
+product (x:xs) = x * (product xs)
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
@@ -34,10 +36,10 @@ ________________________________________________________________________________
 ### Reverse that list!
 Implement the function reverse that reverses the elements of a list.
 ```haskell
-
--- Test
-
 -- Solution
+reverse :: [a] -> [a]
+reverse [] = []
+reverse (x:xs) = (reverse xs) ++ [x]
 
 ```
 
