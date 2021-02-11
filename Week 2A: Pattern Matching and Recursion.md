@@ -48,11 +48,10 @@ ________________________________________________________________________________
 ### Gotta sum 'em all
 Define a recursive function sumdown :: Int -> Int that returns the sum of the non-negative integers from a given value down to zero. For example, sumdown 3 should return the result 3+2+1+0 = 6.
 ```haskell
-
--- Test
-
 -- Solution
-
+sumdown :: Int -> Int
+sumdown n | n > 0 = n + sumdown (n-1)
+          | n == 0 = 0
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
@@ -71,10 +70,43 @@ Redefine the following functions from the Prelude using recursion:
 - The function last :: [a] -> a selecting the last element of a non-empty list.
 
 ```haskell
--- Test
-
 -- Solution
+(^) :: Int -> Int -> Int
+m ^ 0 = 1
+m ^ n = m * (m ^ (n-1))
 
+and :: [Bool] -> Bool
+and [] = True
+and (x:xs) = x && (and xs)
+
+concat :: [[a]] -> [a]
+concat [] = []
+concat (x:xs) = x ++ concat xs
+
+replicate :: Int -> a -> [a]
+replicate 0 _ = []
+replicate x n = n : replicate (x-1) n
+
+(!!) :: [a] -> Int -> a
+(x:xs) !! 0 = x
+(_:xs) !! n = xs !! (n-1)
+
+elem :: Eq a => a -> [a] -> Bool
+elem y [] = False
+elem y (x:xs) | x == y = True
+             | otherwise = elem y xs
+     
+sum :: [Int] -> Int
+sum [] = 0
+sum (x:xs) = x + sum xs
+
+take :: Int -> [a] -> [a]
+take 0 xs = []
+take n (x:xs) = x : (take (n-1) xs)
+
+last :: [a] -> a
+last (x:[]) = x
+last (x:xs) = last xs
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
@@ -98,10 +130,10 @@ power :: Integer -> Integer -> Integer
 power n 0  = 1
 power n k  = n * power n (k-1)
 
--- Test
-
 -- Solution
-
+power :: Integer -> Integer -> Integer
+power n 0  = 1
+power n k  = if odd k then n * power n (k-1) else (n^2)^(k `div` 2)
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
@@ -114,11 +146,11 @@ Define a recursive function euclid :: Int -> Int -> Int that implements Euclid�
 ```
 
 ```haskell
-
--- Test
-
 -- Solution
-
+euclid :: Int -> Int -> Int
+euclid x y | x == y     = x
+           | x > y      = euclid (x-y) y
+           | otherwise  = euclid x (y-x)
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
@@ -136,11 +168,23 @@ Next, define a function split :: [a] -> ([a],[a]) that splits a list into two ha
 Using merge and split, define a function msort :: Ord a => [a] -> [a] that implements merge sort, in which the empty list and singleton lists are already sorted, and any other list is sorted by merging together the two lists that result from sorting the two halves of the list separately.
 
 ```haskell
-
--- Test
-
 -- Solution
+merge :: Ord a => [a] -> [a] -> [a]
+merge [] ys = ys
+merge xs [] = xs
+merge (x:xs) (y:ys) | x < y = x : merge xs (y:ys)
+                    | otherwise = y : merge (x:xs) ys
 
+split :: [a] -> ([a],[a])
+split xs = splitAt halve xs
+           where halve = length xs `div` 2
+
+
+msort :: Ord a => [a] -> [a]
+msort [] = []
+msort [a] = [a]
+msort as = merge(msort start) (msort end)
+           where (start, end) = split as
 ```
 
 ___________________________________________________________________________________________________________________________________________________________
@@ -150,10 +194,11 @@ Two lists are ‘bag equal’ if they contain the same elements, but possibly in
 
 Hint: you can make use of the library functions elem :: (Eq a) => a -> [a] -> Bool and delete :: (Eq a) => a -> [a] -> [a].
 ```haskell
-
--- Test
-
 -- Solution
+bagEqual :: (Eq a) => [a] -> [a] -> Bool
+bagEqual [] ys = ys == []
+bagEqual (x:xs) ys = if (elem x ys) then (bagEqual xs (delete x ys))
+                     else False
 
 ```
 
@@ -207,10 +252,15 @@ type Move = (String, String)
 hanoi :: Int -> Peg -> Peg -> Peg -> [Move]
 hanoi n source target spare = undefined
 
--- Test
-
 -- Solution
+type Peg = String
+type Move = (String, String)
 
+hanoi :: Int -> Peg -> Peg -> Peg -> [Move]
+hanoi n source target spare = hanoilist n source target spare []
+  where
+    hanoilist 0 _ _ _ list = list
+    hanoilist n a b c list = hanoilist (n-1) a c b ((a, b) : hanoilist (n-1) c b a list)
 ```
 
 
@@ -230,9 +280,10 @@ Write a function localMaxima :: [Int] -> [Int] that computes all the local maxim
 ```
 
 ```haskell
-
--- Test
-
 -- Solution
+localMaxima :: [Int] -> [Int]
+localMaxima (x:y:z:zs) = if x < y && y > z then y : localMaxima (y:z:zs)
+                         else localMaxima (y:z:zs)
+localMaxima _ = []
 
 ```
