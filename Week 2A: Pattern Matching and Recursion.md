@@ -4,7 +4,7 @@ Define functions third1 third2 third3 :: [a] -> a that all return the third elem
 - third2 should be defined using !!
 - third3 should be defined using pattern matching
 
-
+##### Solution:
 ```haskell
 third1 xs = undefined
 third2 xs = undefined
@@ -24,6 +24,7 @@ ________________________________________________________________________________
 ### Product
 Implement a function product that produces the product of a list of numbers. For example, product [2,3,4] = 24.
 
+##### Solution:
 ```haskell
 -- Solution
 product :: Num a => [a] -> a
@@ -35,8 +36,9 @@ ________________________________________________________________________________
 
 ### Reverse that list!
 Implement the function reverse that reverses the elements of a list.
+
+##### Solution:
 ```haskell
--- Solution
 reverse :: [a] -> [a]
 reverse [] = []
 reverse (x:xs) = (reverse xs) ++ [x]
@@ -47,8 +49,9 @@ ________________________________________________________________________________
 
 ### Gotta sum 'em all
 Define a recursive function sumdown :: Int -> Int that returns the sum of the non-negative integers from a given value down to zero. For example, sumdown 3 should return the result 3+2+1+0 = 6.
+
+##### Solution:
 ```haskell
--- Solution
 sumdown :: Int -> Int
 sumdown n | n > 0 = n + sumdown (n-1)
           | n == 0 = 0
@@ -69,8 +72,8 @@ Redefine the following functions from the Prelude using recursion:
 - The function take :: Int -> [a] -> [a] taking a given number of elements from the start of a list.
 - The function last :: [a] -> a selecting the last element of a non-empty list.
 
+##### Solution:
 ```haskell
--- Solution
 (^) :: Int -> Int -> Int
 m ^ 0 = 1
 m ^ n = m * (m ^ (n-1))
@@ -125,6 +128,7 @@ n^k=n⋅n^k−1  (k odd)
 Modify the definition of power to make use of this more efficient process.
 Hint. Haskell has built-in functions even and odd to check whether a number is even or odd. To divide integer numbers, use the div function (and not the function (/), which is used to divide floating point and rational numbers).
 
+##### Solution:
 ```haskell
 power :: Integer -> Integer -> Integer
 power n 0  = 1
@@ -144,9 +148,8 @@ Define a recursive function euclid :: Int -> Int -> Int that implements Euclid�
 > euclid 6 27
 3
 ```
-
+##### Solution:
 ```haskell
--- Solution
 euclid :: Int -> Int -> Int
 euclid x y | x == y     = x
            | x > y      = euclid (x-y) y
@@ -167,8 +170,8 @@ Next, define a function split :: [a] -> ([a],[a]) that splits a list into two ha
 
 Using merge and split, define a function msort :: Ord a => [a] -> [a] that implements merge sort, in which the empty list and singleton lists are already sorted, and any other list is sorted by merging together the two lists that result from sorting the two halves of the list separately.
 
+##### Solution:
 ```haskell
--- Solution
 merge :: Ord a => [a] -> [a] -> [a]
 merge [] ys = ys
 merge xs [] = xs
@@ -193,8 +196,9 @@ ________________________________________________________________________________
 Two lists are ‘bag equal’ if they contain the same elements, but possibly in a different order. Implement a function bagEqual :: (Eq a) => [a] -> [a] -> Bool that checks if two given lists are bag equal.
 
 Hint: you can make use of the library functions elem :: (Eq a) => a -> [a] -> Bool and delete :: (Eq a) => a -> [a] -> [a].
+
+##### Solution:
 ```haskell
--- Solution
 bagEqual :: (Eq a) => [a] -> [a] -> Bool
 bagEqual [] ys = ys == []
 bagEqual (x:xs) ys = if (elem x ys) then (bagEqual xs (delete x ys))
@@ -266,6 +270,7 @@ The goal of this exercise is to implement the function hanoi :: Int -> Peg -> Pe
 [("a","c"),("a","b"),("c","b")]
 ```
 
+##### Solution:
 ```haskell
 type Peg = String
 type Move = (String, String)
@@ -299,7 +304,7 @@ Write a function localMaxima :: [Int] -> [Int] that computes all the local maxim
 > localMaxima [1,2,3,4,5]
 []
 ```
-
+##### Solution:
 ```haskell
 -- Solution
 localMaxima :: [Int] -> [Int]
