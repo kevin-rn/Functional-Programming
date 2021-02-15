@@ -14,6 +14,7 @@ Use each of the following techniques at least once:
 - Using explicit recursion
 - Using the library function foldr
 
+##### Solution:
 ```haskell
 map :: (a -> b) -> [a] -> [b]
 map f xs = [f x | x <- xs]
@@ -59,7 +60,7 @@ For this exercise, reimplement the two standard Haskell functions
 curry :: ((a, b) -> c) -> (a -> b -> c)
 uncurry :: (a -> b -> c) -> ((a, b) -> c)
 ```
-
+##### Solution:
 ```haskell
 import Prelude hiding (curry, uncurry)
 import qualified Test.QuickCheck.Function as Test
@@ -77,7 +78,7 @@ Using foldl, define a function dec2int :: [Int] -> Int that converts a decimal n
 > dec2int [2,3,4,5]
 2345
 ```
-
+##### Solution:
 ```haskell
 dec2int :: [Int] -> Int
 -- dec2int = foldl (\x  y -> 10*x + y) 0 
@@ -98,6 +99,7 @@ int2bin = unfold (== 0) (`mod 2`) (`div` 2)
 ```
 Redefine the functions map :: (a -> b) -> [a] -> [b] and iterate :: (a -> a) -> a -> [a] in terms of unfold.
 
+##### Solution:
 ```haskell
 import Prelude hiding (map, iterate)
 import qualified Prelude
@@ -124,6 +126,7 @@ Implement a function reindex :: (Int -> Int) -> [a] -> [a] that rearranges the e
 [4,5,1,2,3]
 ```
 
+##### Solution:
 ```haskell
 traverser f i c xs = if ((f c) == i) then (xs !! c) else traverser f i (c+1) xs 
 helper i f xs 
