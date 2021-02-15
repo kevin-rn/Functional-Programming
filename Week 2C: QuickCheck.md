@@ -4,7 +4,9 @@ The standard Haskell function sum :: Num a => [a] -> a is fully defined by the f
 - sum [x] = x 
 - sum (xs ++ ys) = sum xs + sum ys
 
-Write three property testsprop_sum_empty, prop_sum_singleton, and prop_sum_concat` to verify that these properties indeed hold.
+Write three property testsprop_sum_empty, prop_sum_singleton, and prop_sum_concat to verify that these properties indeed hold.
+
+##### Solution
 ```haskell
 prop_sum_empty = sum [] == 0
 
@@ -27,6 +29,8 @@ However, this is not enough to fully specify the sort function: a trivial defini
 We also need to test that the input and output have the same elements.
 
 Implement a function sameElements :: Eq a => [a] -> [a] -> Bool that returns True if the two given lists have precisely the same elements (but possibly in a different order). Then write a test prop_sort_sameElements to test that the input and output of the sort function always have the same elements.
+
+##### Solution
 ```haskell
 sorted :: Ord a => [a] -> Bool
 sorted (x:y:ys) = x <= y && sorted (y:ys)
@@ -60,6 +64,8 @@ Property prop_index failed!
 0
 ```
 Fix the test so that it tests the correct property.
+
+##### Solution
 ```haskell
 prop_index :: [Int] -> Int -> Property
 prop_index xs n = (n > 0 && n < length xs) ==> xs !! n == head (drop n xs)
@@ -68,6 +74,8 @@ ________________________________________________________________________________
 ### Testing the halve
 In one of the first exercises, you implemented a function halve :: [a] -> ([a],[a]) that splits an even-lengthed list into two halves. 
 Now write a QuickCheck property prop_halve_sameLength to test the following property: if the input is a list of even length, then the two halves have the same length.
+
+##### Solution
 ```haskell
 prop_halve_sameLength xs = even_list xs ==> length as == length bs
         where 
