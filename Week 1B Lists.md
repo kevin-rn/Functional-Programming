@@ -284,12 +284,36 @@ Note that you must use putStr to actually visualize the histogram if you are tes
 
 ```haskell
 -- Solution
+-- Count the frequency of the digits 0 through 9 in the input list.
+-- > frequency []      == [0,0,0,0,0,0,0,0,0,0]
+-- > frequency [1,2,3] == [0,1,1,1,0,0,0,0,0,0]
+-- > frequency [1,1,1] == [0,3,0,0,0,0,0,0,0,0]
 frequencyx :: [Int] -> [Int]
 frequencyx xs = map (\n -> length (filter (== n) xs)) [0..9]
 
+-- Convert a frequency list into a histogram line for the given y value.
+-- > line [1,0,3,0,5,0,3,0,1,0] 6 == "          "
+-- > line [1,0,3,0,5,0,3,0,1,0] 5 == "    *     "
+-- > line [1,0,3,0,5,0,3,0,1,0] 2 == "  * * *   "
+-- > line [1,0,3,0,5,0,3,0,1,0] 1 == "* * * * * "
+-- > line [1,0,3,0,5,0,3,0,1,0] 0 == "**********"
 line :: [Int] -> Int -> String
 line xs y = map (\x -> if x >= y then '*' else ' ') xs
 
+
+-- Construct a vertical histogram representing the frequency of
+-- each digit (0 through 9, inclusive) in the input list.
+-- (Use `putStr` to render the histogram in the console.)
+--
+-- > putStr (histogram []) == 
+--     ==========
+--     0123456789
+-- > putStr (histogram [1,1,1,5]) == 
+--     *
+--     *
+--     *   *
+--    ==========
+--    0123456789
 histogram :: [Int] -> String
 histogram xs = rows ++ "==========\n0123456789\n"
     where f = frequencyx xs
