@@ -3,8 +3,8 @@ The recursive type of (unary) natural numbers is defined as follows:
 ```haskell
 data Nat = Zero | Suc Nat
 ```
-Assignment 1. Define a recursive function natToInteger :: Nat -> Integer that converts a unary natural number to a Haskell Integer.  
-Assignment 2. Define the recursive functions add :: Nat -> Nat -> Nat, mult :: Nat -> Nat -> Nat, and pow :: Nat -> Nat -> Nat.  
+Assignment 1. Define a recursive function ```natToInteger :: Nat -> Integer``` that converts a unary natural number to a Haskell Integer.  
+Assignment 2. Define the recursive functions ```add :: Nat -> Nat -> Nat```, ```mult :: Nat -> Nat -> Nat```, and ```pow :: Nat -> Nat -> Nat```.  
   Hint: make use of the functions you already defined.  
 Assignment 3. Use a deriving clause to automatically define instances of the Show and Eq typeclasses for the Nat type.  
 Assignment 4. Define an instance of the Ord typeclass for the Nat type. The instance declaration should look as follows:  
@@ -106,11 +106,11 @@ data Tree a = Empty | Leaf a | Node (Tree a) a (Tree a)
 ```
 A binary tree is a search tree if for every node, all values in the left subtree are smaller than the stored value, and all values in the right subtree are greater than the stored value.  
 A tree is balanced if the number of leaves in the left and right subtree of every node differs by at most one.  
-Assignment 1. Define a function occurs :: Ord a => a -> Tree a -> Bool that checks if a value occurs in the given search tree. Hint: the standard prelude defines a type data Ordering = LT | EQ | GT together with a function compare :: Ord a => a -> a -> Ordering that decides if one value in an ordered type is less than (LT), equal to (EQ), or greater than (GT) another value.  
-Assignment 2. Define a function is_balanced :: Tree a -> Bool that checks if the given tree is balanced. Hint: first define a function that returns the number of elements in a tree.  
-Assignment 3. Define a function flatten :: Tree a -> [a] that returns a list that contains all the elements stored in the given tree from left to right.  
-Assignment 4. Define a function balance :: [a] -> Tree a that converts a non-empty list into a balanced tree.  
-The functions you define should satisfy flatten (balance xs) == xs for any list xs.  
+Assignment 1. Define a function ```occurs :: Ord a => a -> Tree a -> Bool``` that checks if a value occurs in the given search tree. Hint: the standard prelude defines a type ```data Ordering = LT | EQ | GT``` together with a function ```compare :: Ord a => a -> a -> Ordering``` that decides if one value in an ordered type is less than (LT), equal to (EQ), or greater than (GT) another value.  
+Assignment 2. Define a function ```is_balanced :: Tree a -> Bool``` that checks if the given tree is balanced. Hint: first define a function that returns the number of elements in a tree.  
+Assignment 3. Define a function ```flatten :: Tree a -> [a]``` that returns a list that contains all the elements stored in the given tree from left to right.  
+Assignment 4. Define a function ```balance :: [a] -> Tree a``` that converts a non-empty list into a balanced tree.  
+The functions you define should satisfy ```flatten (balance xs) == xs``` for any list xs.  
 
 #### Solution:
 ```haskell
@@ -152,10 +152,10 @@ ________________________________________________________________________________
 
 ### Expressions 
 Consider the type of arithmetic expressions involving + and -:
-```haskell data Expr = Val Int | Add Expr Expr | Subs Expr Expr ```
-1. Define a higher-order function folde :: (Int -> a) -> (a -> a -> a) -> (a -> a -> a) -> Expr -> a such that folde f g h replaces each Val constructor in an expression by the function f, each Add constructor by the function g, and each Subs constructor with the function h.
-2. Using folde, define a function eval :: Expr -> Int that evaluates an expression to an integer value.
-3. Using folde, define a function size :: Expr -> Int that calculates the number of values in an expression.
+``` data Expr = Val Int | Add Expr Expr | Subs Expr Expr ```
+1. Define a higher-order function ```folde :: (Int -> a) -> (a -> a -> a) -> (a -> a -> a) -> Expr -> a``` such that folde f g h replaces each Val constructor in an expression by the function f, each Add constructor by the function g, and each Subs constructor with the function h.
+2. Using folde, define a function ```eval :: Expr -> Int``` that evaluates an expression to an integer value.
+3. Using folde, define a function ```size :: Expr -> Int``` that calculates the number of values in an expression.
 
 ```haskell
 folde :: (Int -> a) -> (a -> a -> a) -> (a -> a -> a) -> Expr -> a
@@ -171,7 +171,290 @@ eval e = folde id (+) (-) e
 size :: Expr -> Int
 size e = folde (\_ -> 1) (+) (+) e
 ```
+_____________________________________________________________________________________________________________________________________________________
 
+### Equality instances
 
+Complete the given instance declarations for the following types:
+```data Option a = None | Some a```
+```data List a = Nil | Cons a (List a)```
+```data Tree a = Leaf a | Node (Tree a) a (Tree a)```
+
+#### Template:
+```haskell
+instance Eq a => Eq (Option a) where
+  ...
+  
+instance Eq a => Eq (List a) where
+  ...
+  
+instance Eq a => Eq (Tree a) where
+  ...
+```
+
+### Solution:
+```haskell
+instance Eq a => Eq (Option a) where
+  (Some a) == (Some b) = (a == b)
+  None == None =  True
+  _ == _ = False
+  
+instance Eq a => Eq (List a) where
+  (Cons a b) == (Cons c d) = (a == c) && (b == d)
+  Nil == Nil = True
+  _ == _ = False
+  
+instance Eq a => Eq (Tree a) where
+  (Node a b c) == (Node d e f) = (a == d) && (b == e) && (c == f)
+  (Leaf a) == (Leaf b) = (a == b)
+  _ == _ = False
+```
+_____________________________________________________________________________________________________________________________________________________
+
+### Tautology checker
+You are given a tautology checker for boolean propositions (see Section 8.6 of the book).  
+Assignment 1. Extend the tautology checker to support the use of logical disjunction (\/) and equivalence (<=>) of propositions. The new constructors should be called Or and Equiv (otherwise the tests will not work).  
+Assignment 2. Implement a function ```isSat :: Prop -> Maybe Subst``` that returns Just s if there is a substitution s for which the given proposition is true, and Nothing if there is no such substitution.  
+Assignment 3. Optimize the implementation of isSat so it has a polynomial complexity. (Note: This could be hard.)  
+
+#### Template:
+```haskell
+data Prop = Const Bool
+          | Var Char
+          | Not Prop
+          | And Prop Prop
+          | Imply Prop Prop
+  deriving (Show)
+          
+type Assoc k v = [(k,v)]
+          
+find :: (Eq k) => k -> Assoc k v -> v
+find k [] = error "Key not found!"
+find k ((k',x):xs)
+  | k == k'   = x
+  | otherwise = find k xs
+
+type Subst = Assoc Char Bool
+
+eval :: Subst -> Prop -> Bool
+eval _ (Const b)   = b
+eval s (Var x)     = find x s
+eval s (Not p)     = not (eval s p)
+eval s (And p q)   = eval s p && eval s q
+eval s (Imply p q) = eval s p <= eval s q
+
+vars :: Prop -> [Char]
+vars (Const _)   = []
+vars (Var x)     = [x]
+vars (Not p)     = vars p
+vars (And p q)   = vars p ++ vars q
+vars (Imply p q) = vars p ++ vars q
+
+bools :: Int -> [[Bool]]
+bools 0       = [[]]
+bools n | n>0 = map (False:) bss ++ map (True:) bss
+  where bss = bools (n-1)
+  
+substs :: Prop -> [Subst]
+substs p = map (zip vs) (bools (length vs))
+  where vs = nub (vars p)
+  
+isTaut :: Prop -> Bool
+isTaut p = and [eval s p | s <- substs p]
+```
+
+#### Solution:
+```haskell
+data Prop = Const Bool
+          | Var Char
+          | Not Prop
+          | And Prop Prop
+          | Imply Prop Prop
+          | Or Prop Prop
+          | Equiv Prop Prop
+  deriving (Show)
+          
+type Assoc k v = [(k,v)]
+          
+find :: (Eq k) => k -> Assoc k v -> v
+find k [] = error "Key not found!"
+find k ((k',x):xs)
+  | k == k'   = x
+  | otherwise = find k xs
+
+type Subst = Assoc Char Bool
+
+eval :: Subst -> Prop -> Bool
+eval _ (Const b)   = b
+eval s (Var x)     = find x s
+eval s (Not p)     = not (eval s p)
+eval s (And p q)   = eval s p && eval s q
+eval s (Imply p q) = eval s p <= eval s q
+eval s (Or p q)    = eval s p || eval s q
+eval s (Equiv p q) = eval s p == eval s q
+
+vars :: Prop -> [Char]
+vars (Const _)   = []
+vars (Var x)     = [x]
+vars (Not p)     = vars p
+vars (And p q)   = vars p ++ vars q
+vars (Imply p q) = vars p ++ vars q
+vars (Or p q)   = vars p ++ vars q
+vars (Equiv p q) = vars p ++ vars q
+
+bools :: Int -> [[Bool]]
+bools 0       = [[]]
+bools n | n>0 = map (False:) bss ++ map (True:) bss
+  where bss = bools (n-1)
+  
+substs :: Prop -> [Subst]
+substs p = map (zip vs) (bools (length vs))
+  where vs = nub (vars p)
+  
+isTaut :: Prop -> Bool
+isTaut p = and [eval s p | s <- substs p]
+
+isSat :: Prop -> Maybe Subst
+isSat p = if length list == 0 then Nothing else Just (head list)
+  where
+    list = filter (\x -> eval x p) (substs p)
+```
+
+_____________________________________________________________________________________________________________________________________________________
+
+### Shapes
+Define a new typeclass Shape a with the following functions:
+ ```corners :: a -> Int
+    circumference :: a -> Double
+    surface :: a -> Double
+    rescale :: Double -> a -> a```
+Then, define instances of this typeclass for the following types:
+```haskell
+data Square = Square { squareSide :: Double }  
+data Rectangle = Rect { rectWidth :: Double , rectHeight :: Double }  
+data Circle = Circle { circleRadius :: Double }  
+```
+Optional: also implement instances for the following types:  
+```haskell
+data Triangle = Triangle { triangleSide1 :: Double, triangleSide2 :: Double, triangleSide3 :: Double }  
+data RegularPolygon = Poly { polySides :: Int , polySideLength :: Double }  
+```
+
+#### Template:
+```haskell
+data Square = Square { squareSide :: Double }
+  deriving (Show, Eq)
+  
+data Rectangle = Rect { rectWidth :: Double , rectHeight :: Double }
+  deriving (Show, Eq)
+  
+data Circle = Circle { circleRadius :: Double }
+  deriving (Show, Eq)
+  
+data Triangle = Triangle { triangleSide1 :: Double, triangleSide2 :: Double, triangleSide3 :: Double }
+  deriving (Show, Eq)
+  
+data RegularPolygon = Poly { polySides :: Int , polySideLength :: Double }
+  deriving (Show, Eq)
+```
+
+#### Solution:
+```haskell
+
+```
+
+_____________________________________________________________________________________________________________________________________________________
+
+### Quaternions 
+(Quaternions)[https://en.wikipedia.org/wiki/Quaternion] are a generalization of complex numbers developed initially by the Irish mathematician Hamilton to solve dynamics problems in physics. More recently, they have been used in computer graphics to efficiently compute transformations in 3D space. Where complex numbers have two components (a real and an imaginary part), quaternions have four. An arbitrary quaternion can be written as a + b*i + c*j + d*k where a,b,c,d are real numbers and i,j,k are constants satisfying the following laws:
+- i*i = -1  
+- j*j = -1  
+- k*k = -1  
+- i*j = k  
+- j*i = -k  
+- j*k = i  
+- k*j = -i  
+- k*i = j  
+- i*k = -j  
+Note that multiplication on quaternions is not commutative: i*j is not equal to j*i!  
+
+Your task is to implement a Haskell type Quaternion and define the constants ```i,j,k :: Quaternion```, a function ```fromDouble :: Double -> Quaternion```, and give instances for the Eq, Show, and Num classes. Some further details:
+- Quaternions should be pretty-printed in the format 1.2 + 3.4i + 5.6j + 7.8k
+- The absolute value of a quaternion equals the square root of the sum of the squares of all its components, i.e. abs(a+bi+cj+dk)=√(a^2+b^2+c^2+d^2)  
+- The abs and signum functions should satisfy the equation x = abs x * signum x for any quaternion x.  
+
+#### Solution:
+```haskell
+
+```
+_____________________________________________________________________________________________________________________________________________________
+
+### Pretty-printing JSON data
+The JSON (JavaScript Object Notation) language is a small, simple representation for storing and transmitting structured data, for example over a network connection. It is most commonly used to transfer data from a web service to a browser-based JavaScript application. The JSON format is described at www.json.org, and in greater detail by (RFC 4627)[https://www.ietf.org/rfc/rfc4627.txt].  
+
+JSON supports four basic types of value: strings, numbers, booleans, and a special value named null. The language provides two compound types: an array is an ordered sequence of values, and an object is an unordered collection of name/value pairs. The names in an object are always strings; the values in an object or array can be of any type.  
+
+To work with JSON data in Haskell, we use an algebraic data type to represent the range of possible JSON types.  
+
+Exercise 1. Define a datatype JValue with constructors JString (storing a String), JNumber (storing a Double), JBool (storing a Bool), JNull, JObject (storing a list of key-value pairs), and JArray (storing a list of values). Add deriving Show to the end of your definition to derive a Show instance for your type.  
+Exercise 2. Implement an instance of the Eq class for JValue.  
+We can see how to use a constructor to take a normal Haskell value and turn it into a JValue. To do the reverse, we use pattern matching.  
+
+Exercise 3. Implement the following functions for converting JSON values to Haskell values:
+```
+    getString :: JValue -> Maybe String
+    getInt :: JValue -> Maybe Int
+    getDouble :: JValue -> Maybe Double
+    getBool :: JValue -> Maybe Bool
+    getObject :: JValue -> Maybe [(String, JValue)]
+    getArray :: JValue -> Maybe [JValue]
+    isNull :: JValue -> Bool
+```
+Hint. The function toInt should round the given number down to the nearest integer. For this, you can use the function truncate.
+
+Now that we have a Haskell representation for JSON’s types, we’d like to be able to take Haskell values and render them as JSON data.
+Exercise 4. Implement a function ```renderJValue :: JValue -> String``` that prints a value in JSON form (see “Tests”).
+
+Note that when pretty printing a string value, JSON has moderately involved escaping rules that we must follow. For this exercise, you can approximate the escaping rules by using ```show``` on the string. This will use the Haskell escaping rules rather than the JSON escaping rules, which is good enough for the tests of this exercise. For the full project you will need to implement the proper JSON escaping rules, however.
+
+(This assignment is based on the material from (Chapter 5 of Real World Haskell)[http://book.realworldhaskell.org/read/writing-a-library-working-with-json-data.html], which is licensed under a Attribution-NonCommercial 3.0 Unported Creative Commons license.)
+
+### Tests:
+```haskell
+test_string :: JValue
+test_string = JString "foo"
+
+test_number :: JValue
+test_number = JNumber 2.7
+
+test_array :: JValue
+test_array = JArray [JNumber (-3.14), JBool True, JNull, JString "a string"]
+
+test_object :: JValue
+test_object = JObject [ ("numbers", JArray [JNumber 1, JNumber 2, JNumber 3, JNumber 4, JNumber 5])
+                      , ("useful", JBool False)
+                      ]
+                      
+prop_render_string :: Bool
+prop_render_string = renderJValue test_string == "\"foo\""
+
+prop_render_number :: Bool
+prop_render_number = renderJValue test_number == "2.7"
+
+prop_render_bool :: Bool
+prop_render_bool = renderJValue (JBool True) == "true"
+
+prop_render_array :: Bool
+prop_render_array = renderJValue test_array == "[-3.14, true, null, \"a string\"]"
+
+prop_render_object :: Bool
+prop_render_object = renderJValue test_object == "{\"numbers\": [1.0, 2.0, 3.0, 4.0, 5.0], \"useful\": false}"
+
+```
+
+#### Solution:
+```haskell
+
+```
 
 
