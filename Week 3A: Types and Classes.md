@@ -366,7 +366,7 @@ data RegularPolygon = Poly { polySides :: Int , polySideLength :: Double }
 _____________________________________________________________________________________________________________________________________________________
 
 ### Quaternions 
-(Quaternions)[https://en.wikipedia.org/wiki/Quaternion] are a generalization of complex numbers developed initially by the Irish mathematician Hamilton to solve dynamics problems in physics. More recently, they have been used in computer graphics to efficiently compute transformations in 3D space. Where complex numbers have two components (a real and an imaginary part), quaternions have four. An arbitrary quaternion can be written as a + b*i + c*j + d*k where a,b,c,d are real numbers and i,j,k are constants satisfying the following laws:
+[Quaternions](https://en.wikipedia.org/wiki/Quaternion) are a generalization of complex numbers developed initially by the Irish mathematician Hamilton to solve dynamics problems in physics. More recently, they have been used in computer graphics to efficiently compute transformations in 3D space. Where complex numbers have two components (a real and an imaginary part), quaternions have four. An arbitrary quaternion can be written as a + b*i + c*j + d*k where a,b,c,d are real numbers and i,j,k are constants satisfying the following laws:
 - i*i = -1  
 - j*j = -1  
 - k*k = -1  
@@ -390,7 +390,7 @@ Your task is to implement a Haskell type Quaternion and define the constants ```
 _____________________________________________________________________________________________________________________________________________________
 
 ### Pretty-printing JSON data
-The JSON (JavaScript Object Notation) language is a small, simple representation for storing and transmitting structured data, for example over a network connection. It is most commonly used to transfer data from a web service to a browser-based JavaScript application. The JSON format is described at www.json.org, and in greater detail by (RFC 4627)[https://www.ietf.org/rfc/rfc4627.txt].  
+The JSON (JavaScript Object Notation) language is a small, simple representation for storing and transmitting structured data, for example over a network connection. It is most commonly used to transfer data from a web service to a browser-based JavaScript application. The JSON format is described at www.json.org, and in greater detail by [RFC 4627](https://www.ietf.org/rfc/rfc4627.txt).  
 
 JSON supports four basic types of value: strings, numbers, booleans, and a special value named null. The language provides two compound types: an array is an ordered sequence of values, and an object is an unordered collection of name/value pairs. The names in an object are always strings; the values in an object or array can be of any type.  
 
@@ -417,7 +417,7 @@ Exercise 4. Implement a function ```renderJValue :: JValue -> String``` that pri
 
 Note that when pretty printing a string value, JSON has moderately involved escaping rules that we must follow. For this exercise, you can approximate the escaping rules by using ```show``` on the string. This will use the Haskell escaping rules rather than the JSON escaping rules, which is good enough for the tests of this exercise. For the full project you will need to implement the proper JSON escaping rules, however.
 
-(This assignment is based on the material from (Chapter 5 of Real World Haskell)[http://book.realworldhaskell.org/read/writing-a-library-working-with-json-data.html], which is licensed under a Attribution-NonCommercial 3.0 Unported Creative Commons license.)
+(This assignment is based on the material from [Chapter 5 of Real World Haskell](http://book.realworldhaskell.org/read/writing-a-library-working-with-json-data.html), which is licensed under a Attribution-NonCommercial 3.0 Unported Creative Commons license.)
 
 ### Tests:
 ```haskell
