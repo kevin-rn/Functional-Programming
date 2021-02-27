@@ -437,6 +437,44 @@ Your task is to implement a Haskell type Quaternion and define the constants ```
 - The absolute value of a quaternion equals the square root of the sum of the squares of all its components, i.e. abs(a+bi+cj+dk)=√(a^2+b^2+c^2+d^2)  
 - The abs and signum functions should satisfy the equation x = abs x * signum x for any quaternion x.  
 
+### Test:
+```haskell
+prop_prnt = show (Quaternion 1 2 3 4) === "1.0 + 2.0i + 3.0j + 4.0k"
+prop_eq = Quaternion 1 2 3 4 === Quaternion 1 2 3 4
+prop_neq = (Quaternion 1 2 3 5 /= Quaternion 1 2 3 4) === True
+prop_absi = abs i === fromDouble 1.0
+prop_absj = abs j === fromDouble 1.0
+prop_absk = abs k === fromDouble 1.0
+prop_abs = abs (Quaternion 1 0 0 0) === fromDouble 1.0
+prop_abs0 = abs (Quaternion 0 0 0 0) === fromDouble 0.0
+
+prop_i_mult = i * i === Quaternion (-1.0) 0 0 0
+prop_j_mult = j * j === Quaternion (-1.0) 0 0 0
+prop_k_mult = k * k === Quaternion (-1.0) 0 0 0
+
+prop_ij_mult = i * j === k
+prop_ji_mult = j * i === -k
+prop_jk_mult = j * k === i
+prop_kj_mult = k * j === -i
+prop_ki_mult = k * i === j
+prop_ik_mult = i * k === -j
+
+
+instance Arbitrary Quaternion where
+   arbitrary = do
+     a <- arbitrary
+     b <- arbitrary
+     c <- arbitrary
+     d <- arbitrary
+     return $ Quaternion a b c d
+
+prop_abs_signum :: Quaternion -> Property
+prop_abs_signum q @ (Quaternion a b c d) = (a /= 0 && b /= 0 && c /= 0 && d /= 0) ==> x < d && y < d && z < d && w < d
+  where 
+   (Quaternion x y z w) = (abs q * signum q) - q
+   d = 0.0001
+```
+
 #### Solution:
 ```haskell
 
