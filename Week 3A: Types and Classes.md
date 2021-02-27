@@ -125,7 +125,7 @@ occurs a (Node l m r) = case compare a m of
 size :: Tree a -> Int
 size Empty = 0
 size (Leaf _) = 1
-size (Node l _ r) = size l + 1 + size r
+size (Node l _ r) = size l + size r
 
 is_balanced :: Tree a -> Bool
 is_balanced Empty = True
@@ -142,7 +142,7 @@ balance [] = Empty
 balance [n] = Leaf n
 balance xs = Node (balance left) mid (balance right)
   where 
-    (left, half) = splitAt ((length xs `div` 2) - 1) xs
+    (left, half) = splitAt (length xs `div` 2) xs
     right = tail half
     mid = head half
 
