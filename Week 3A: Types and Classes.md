@@ -360,7 +360,61 @@ data RegularPolygon = Poly { polySides :: Int , polySideLength :: Double }
 
 #### Solution:
 ```haskell
+data Square = Square { squareSide :: Double }
+  deriving (Show, Eq)
+  
+data Rectangle = Rect { rectWidth :: Double , rectHeight :: Double }
+  deriving (Show, Eq)
+  
+data Circle = Circle { circleRadius :: Double }
+  deriving (Show, Eq)
+  
+data Triangle = Triangle { triangleSide1 :: Double, triangleSide2 :: Double, triangleSide3 :: Double }
+  deriving (Show, Eq)
+  
+data RegularPolygon = Poly { polySides :: Int , polySideLength :: Double }
+  deriving (Show, Eq)
 
+class Shape a where
+  corners :: a -> Int
+  circumference :: a -> Double
+  surface :: a -> Double
+  rescale :: Double -> a -> a
+  
+instance Shape Square where
+  corners (Square _) = 4
+  circumference (Square side) = 4 * side
+  surface (Square side) = side * side
+  rescale r (Square side) = Square (r * side)
+
+instance Shape Rectangle where
+  corners (Rect _ _) = 4
+  circumference (Rect width height) = 2 * width + 2 * height
+  surface (Rect width height) = width * height
+  rescale r (Rect width height) = Rect (r * width) (r * height)
+  
+instance Shape Circle where
+  corners (Circle _) = 0
+  circumference (Circle radius) = 2 * pi * radius
+  surface (Circle radius) = pi * (radius ^ 2)
+  rescale r (Circle radius) = Circle (r * radius)
+  
+instance Shape Triangle where
+  corners (Triangle _ _ _) = 3
+  circumference (Triangle side1 side2 side3) = side1 + side2 + side3
+  surface (Triangle side1 side2 side3) = sqrt (p * (p - side1) * (p - side2) * (p - side3))
+    where
+      p = (side1 + side2 + side3) / 2
+  rescale r (Triangle side1 side2 side3) = Triangle (r * side1) (r * side2) (r * side3)
+
+instance Shape RegularPolygon where
+  corners (Poly sides _) = sides
+  circumference (Poly sides sidelength) = (fromIntegral sides) * sidelength
+  surface (Poly sides sidelength) = numerator / denominator
+    where
+      numerator = ((fromIntegral sides) * (sidelength^2))
+      denominator = (4 * tan (pi / (fromIntegral sides)))
+  rescale r (Poly sides sidelength) = Poly sides (r * sidelength)
 ```
 
 _____________________________________________________________________________________________________________________________________________________
