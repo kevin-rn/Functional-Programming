@@ -22,6 +22,11 @@ data Expr a = Var a | Val Int | Add (Expr a) (Expr a)
   deriving (Show)
 ```
 For example, if we want to represent variables as string we can use the type Expr String. Show how to make this type into an instance of the Functor class.
+```haskell
+instance Functor Expr where
+  -- fmap :: (a -> b) -> Expr a -> Expr b
+  fmap = undefined
+```
 
 ##### Solution:
 ```haskell
@@ -42,6 +47,21 @@ Complete the given declarations that implement this idea.
 
 Note: The ZipList wrapper around the list type is required because each type can only have at most one instance declaration for a given class.
 
+```haskell
+newtype ZipList a = Z [a]
+  deriving (Show)
+  
+instance Functor ZipList where
+  -- fmap :: (a -> b) -> ZipList a -> ZipList b
+  fmap g (Z xs) = undefined
+  
+instance Applicative ZipList where
+  -- pure :: a -> ZipList a
+  pure x = undefined
+  
+  -- (<*>) :: ZipList (a -> b) -> ZipList a -> ZipList b
+  (Z gs) <*> (Z xs) = undefined
+  ```
 
 ##### Solution:
 ```haskell
