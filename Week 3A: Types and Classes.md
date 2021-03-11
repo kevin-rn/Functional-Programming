@@ -477,6 +477,33 @@ prop_abs_signum q @ (Quaternion a b c d) = (a /= 0 && b /= 0 && c /= 0 && d /= 0
 
 #### Solution:
 ```haskell
+data Quaternion = Quaternion { a :: Double, b :: Double, c :: Double, d :: Double }
+  deriving(Eq)
+
+i = Quaternion { a=0, b=1, c=0, d=0 }
+j = Quaternion { a=0, b=0, c=1, d=0 }
+k = Quaternion { a=0, b=0, c=0, d=1 }
+  
+fromDouble :: Double -> Quaternion
+fromDouble r = Quaternion { a=r, b=0, c=0, d=0 }
+
+instance Show Quaternion where
+  show (Quaternion a b c d) = show a ++ " + " ++ show b  ++ "i + " ++ show c  ++ "j + " ++ show d  ++ "k"
+  
+instance Num Quaternion where
+
+  (+) (Quaternion a1 b1 c1 d1) (Quaternion a2 b2 c2 d2) = Quaternion {a= a1 + a2, b = b1 + b2, c = c1 + c2, d =  d1 + d2 } 
+  (-) (Quaternion a1 b1 c1 d1) (Quaternion a2 b2 c2 d2) = Quaternion {a= a1 - a2, b = b1 - b2, c = c1 - c2, d =  d1 - d2 }
+  (*) (Quaternion a1 b1 c1 d1) (Quaternion a2 b2 c2 d2) = Quaternion {a= r, b = i, c = j, d = k } 
+    where
+      r =  (a1 * a2) - (b1 * b2) - (c1 * c2) - (d1 * d2)
+      i = (a1 * b2) + (b1 * a2) + (c1 * d2) - (d1 * c2)
+      j = (a1 * c2) - (b1 * d2) + (c1 * a2) + (d1 * b2)
+      k =(a1 * d2) + (b1 * c2) - (c1 * b2) + (d1 * a2)
+  abs (Quaternion a b c d) =  fromDouble (sqrt (a ** 2 + b ** 2 + c ** 2 + d ** 2))
+  signum (Quaternion a1 b1 c1 d1) = Quaternion { a = signum a1, b = signum b1, c = signum c1, d = signum d1 }
+  negate (Quaternion a1 b1 c1 d1) = Quaternion { a = negate a1, b = negate b1, c = negate c1, d = negate d1 }
+  fromInteger r = fromDouble (fromIntegral r)
 
 ```
 _____________________________________________________________________________________________________________________________________________________
