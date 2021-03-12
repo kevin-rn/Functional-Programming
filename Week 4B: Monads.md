@@ -215,6 +215,29 @@ local g (Reader f) = Reader (f . g)
 ##### Solution:
 ```haskell
 
+instance Functor (Reader r) where
+  -- fmap :: (a -> b) -> Reader r a -> Reader r b
+  fmap f (Reader g) = Reader (f . g)
+  
+instance Applicative (Reader r) where
+  -- pure :: a -> Reader r a
+  pure x = Reader (\_ -> x)
+  
+  -- (<*>) :: Reader r (a -> b) -> Reader r a -> Reader r b
+  (Reader f) <*> (Reader g) = Reader (\r -> (f r) (g r))
+  
+instance Monad (Reader r) where
+  -- return :: a -> Reader r a
+  return =  pure
+  
+  -- (>>=) :: Reader r a -> (a -> Reader r b) -> Reader r b
+  mx >>= f = let
+     step1 r = runReader mx r        
+     step2 r = f (step1 r)          
+     step3 r = runReader (step2 r) r 
+     in
+     Reader (\r -> step3 r)
+
 ```
 
 _____________________________________________________________________________________________________________________________________________________________
