@@ -581,6 +581,7 @@ data JValue = JString { string :: String }
             | JArray { list :: [JValue] }
             deriving(Show)
 
+-- Can also use deriving(Eq) isntead of creating an instance for Eq
 instance Eq JValue where
   (JString a) == (JString b) = a == b
   (JNumber a) == (JNumber b) = a == b
