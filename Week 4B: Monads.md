@@ -11,7 +11,7 @@ Implement the function loop :: Monad m => m () -> m () that takes as input a mon
 
 Note. This function is called forever in the Haskell Prelude.
 
-### Template:
+##### Template:
 ```haskell
 loop :: Monad m => m () -> m ()
 loop = undefined
@@ -28,7 +28,7 @@ ________________________________________________________________________________
 ### Sequencing data
 Reimplement the library function sequence :: Monad m => [m a] -> m [a] that takes a list of monadic actions, and evaluates them in left-to-right sequence, collecting all the results into a list.  
 
-### Template:
+##### Template:
 ```haskell
 sequence :: Monad m => [m a] -> m [a]
 sequence = undefined
@@ -57,7 +57,7 @@ Reimplement the library function filterM :: Monad m => (a -> m Bool) -> [a] -> m
 
 Note. filterM must process the list elements left-to-right, and it must preserve the order of the elements of the input list, as far as they appear in the result.  
 
-### Template:
+##### Template:
 ```haskell
 filterM :: Monad m => (a -> m Bool) -> [a] -> m [a]
 filterM = undefined
@@ -100,7 +100,7 @@ Some algorithms are expressed more naturally as an imperative while loop instead
 
 As an example of how this function while might be used, the test template contains an implementation of Euclid’s algorithm euclid :: Int -> Int -> Int for finding the greatest common divisor of two positive numbers, using the State monad with a state of type (Int,Int).  
 
-### Template:
+##### Template:
 ```haskell
 while :: Monad m => (m Bool) -> m () -> m ()
 while loopCond loopBody = undefined
@@ -149,7 +149,7 @@ We can run this example with the value 1 for the global variable as follows: run
 
 Your assignment is to complete the given instance declarations to make Reader into an instance of Functor, Applicative, and Monad. For implementing the Monad instance, the helper function runReader :: Reader r a -> r -> a may be useful.  
 
-### Template:
+##### Template:
 ```haskell
 instance Functor (Reader r) where
   -- fmap :: (a -> b) -> Reader r a -> Reader r b
@@ -171,7 +171,7 @@ instance Monad (Reader r) where
 ```
 
 
-### Test:
+##### Test:
 ```haskell
 -- An example of using the Reader monad
 reader_example :: Reader Int (Int,Int)
@@ -189,7 +189,7 @@ prop_reader_example = runReader reader_example 1 === (9,15)
 ```
 
 
-### Library:
+##### Library:
 ```haskell
 newtype Reader r a = Reader (r -> a)
 
