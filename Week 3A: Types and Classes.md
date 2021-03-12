@@ -573,6 +573,60 @@ prop_render_object = renderJValue test_object == "{\"numbers\": [1.0, 2.0, 3.0, 
 
 #### Solution:
 ```haskell
+data JValue = JString { string :: String }
+            | JNumber { double :: Double }
+            | JBool { boolean :: Bool } 
+            | JNull
+            | JObject { pairs :: [(String, JValue)]}
+            | JArray { list :: [JValue] }
+            deriving(Show)
+
+instance Eq JValue where
+  (JString a) == (JString b) = a == b
+  (JNumber a) == (JNumber b) = a == b
+  (JBool a) == (JBool b) = a == b
+  (JObject a) == (JObject b) = a == b
+  (JArray a) == (JArray b) = a == b
+  JNull == JNull = True 
+  _ == _ = False
+  
+getString :: JValue -> Maybe String
+getString (JString s) = Just s
+getString _ = Nothing
+
+getInt :: JValue -> Maybe Int
+getInt (JNumber n) = Just (truncate n)
+getInt _ = Nothing
+
+getDouble :: JValue -> Maybe Double
+getDouble (JNumber n) = Just n
+getDouble _ = Nothing
+
+getBool :: JValue -> Maybe Bool
+getBool (JBool b) = Just b
+getBool _  = Nothing
+
+getObject :: JValue -> Maybe [(String, JValue)]
+getObject (JObject o) = Just o
+getObject _ = Nothing
+
+getArray :: JValue -> Maybe [JValue]
+getArray (JArray a) = Just a
+getArray _ = Nothing
+
+isNull :: JValue -> Bool
+isNull v = v == JNull
+
+renderJValue :: JValue -> String
+renderJValue (JString s)   = show s
+renderJValue (JNumber n)   = show n
+renderJValue (JBool True)  = "true"
+renderJValue (JBool False) = "false"
+renderJValue JNull         = "null"
+renderJValue (JArray a) = "[" ++ (intercalate ", " (map renderJValue a)) ++ "]"
+renderJValue (JObject o) = "{" ++ (intercalate ", " (map renderPair o)) ++ "}"
+  where 
+    renderPair (k,v)   = show k ++ ": " ++ renderJValue v
 
 ```
 
