@@ -1,5 +1,7 @@
 # Implementing `jq` in Haskell
 
+Use wsl with VSCode and do 'sudo apt install jq'
+
 `jq` [(stedolan.github.io/jq)](https://stedolan.github.io/jq/) is a JSON processor.
 It's built in the spirit of Unix: doing one thing, but doing it well.
 Think `awk`, `sed` or `grep`, but for JSON.
