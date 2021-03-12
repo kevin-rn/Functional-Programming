@@ -27,7 +27,7 @@ instance Num Nat where
 ```
 You do not need to give definitions for the functions abs, signum, and negate. Hint. Make use of the add and mult functions you defined before.
 
-#### Template:
+##### Template:
 ```haskell
 data Nat = Zero | Suc Nat 
 
@@ -58,7 +58,7 @@ instance Num Nat where
   fromInteger x = undefined
 ```
 
-#### Solution:
+##### Solution:
 ```haskell
 data Nat = Zero | Suc Nat
   deriving (Show, Eq)
@@ -112,7 +112,7 @@ Assignment 3. Define a function ```flatten :: Tree a -> [a]``` that returns a li
 Assignment 4. Define a function ```balance :: [a] -> Tree a``` that converts a non-empty list into a balanced tree.  
 The functions you define should satisfy ```flatten (balance xs) == xs``` for any list xs.  
 
-#### Solution:
+##### Solution:
 ```haskell
 occurs :: Ord a => a -> Tree a -> Bool
 occurs a Empty = False
@@ -180,7 +180,7 @@ Complete the given instance declarations for the following types:
 ```data List a = Nil | Cons a (List a)```
 ```data Tree a = Leaf a | Node (Tree a) a (Tree a)```
 
-#### Template:
+##### Template:
 ```haskell
 instance Eq a => Eq (Option a) where
   ...
@@ -192,7 +192,7 @@ instance Eq a => Eq (Tree a) where
   ...
 ```
 
-### Solution:
+##### Solution:
 ```haskell
 instance Eq a => Eq (Option a) where
   (Some a) == (Some b) = (a == b)
@@ -217,7 +217,7 @@ Assignment 1. Extend the tautology checker to support the use of logical disjunc
 Assignment 2. Implement a function ```isSat :: Prop -> Maybe Subst``` that returns Just s if there is a substitution s for which the given proposition is true, and Nothing if there is no such substitution.  
 Assignment 3. Optimize the implementation of isSat so it has a polynomial complexity. (Note: This could be hard.)  
 
-#### Template:
+##### Template:
 ```haskell
 data Prop = Const Bool
           | Var Char
@@ -263,7 +263,7 @@ isTaut :: Prop -> Bool
 isTaut p = and [eval s p | s <- substs p]
 ```
 
-#### Solution:
+##### Solution:
 ```haskell
 data Prop = Const Bool
           | Var Char
@@ -340,7 +340,7 @@ data Triangle = Triangle { triangleSide1 :: Double, triangleSide2 :: Double, tri
 data RegularPolygon = Poly { polySides :: Int , polySideLength :: Double }  
 ```
 
-#### Template:
+##### Template:
 ```haskell
 data Square = Square { squareSide :: Double }
   deriving (Show, Eq)
@@ -358,7 +358,7 @@ data RegularPolygon = Poly { polySides :: Int , polySideLength :: Double }
   deriving (Show, Eq)
 ```
 
-#### Solution:
+##### Solution:
 ```haskell
 data Square = Square { squareSide :: Double }
   deriving (Show, Eq)
@@ -437,7 +437,7 @@ Your task is to implement a Haskell type Quaternion and define the constants ```
 - The absolute value of a quaternion equals the square root of the sum of the squares of all its components, i.e. abs(a+bi+cj+dk)=√(a^2+b^2+c^2+d^2)  
 - The abs and signum functions should satisfy the equation x = abs x * signum x for any quaternion x.  
 
-### Test:
+##### Test:
 ```haskell
 prop_prnt = show (Quaternion 1 2 3 4) === "1.0 + 2.0i + 3.0j + 4.0k"
 prop_eq = Quaternion 1 2 3 4 === Quaternion 1 2 3 4
@@ -475,7 +475,7 @@ prop_abs_signum q @ (Quaternion a b c d) = (a /= 0 && b /= 0 && c /= 0 && d /= 0
    d = 0.0001
 ```
 
-#### Solution:
+##### Solution:
 ```haskell
 data Quaternion = Quaternion { a :: Double, b :: Double, c :: Double, d :: Double }
   deriving(Eq)
@@ -538,7 +538,7 @@ Note that when pretty printing a string value, JSON has moderately involved esca
 
 (This assignment is based on the material from [Chapter 5 of Real World Haskell](http://book.realworldhaskell.org/read/writing-a-library-working-with-json-data.html), which is licensed under a Attribution-NonCommercial 3.0 Unported Creative Commons license.)
 
-### Tests:
+##### Tests:
 ```haskell
 test_string :: JValue
 test_string = JString "foo"
@@ -571,7 +571,7 @@ prop_render_object = renderJValue test_object == "{\"numbers\": [1.0, 2.0, 3.0, 
 
 ```
 
-#### Solution:
+##### Solution:
 ```haskell
 data JValue = JString { string :: String }
             | JNumber { double :: Double }
