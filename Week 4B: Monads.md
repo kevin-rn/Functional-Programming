@@ -108,7 +108,11 @@ while loopCond loopBody = undefined
 
 ##### Solution:
 ```haskell
-
+while :: Monad m => (m Bool) -> m () -> m ()
+while loopCond loopBody = do
+  cond <- loopCond
+  if cond then loopBody >> while loopCond loopBody
+  else return ()
 ```
 
 _____________________________________________________________________________________________________________________________________________________________
