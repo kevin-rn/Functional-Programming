@@ -235,8 +235,7 @@ instance Monad (Reader r) where
      step1 r = runReader mx r        
      step2 r = f (step1 r)          
      step3 r = runReader (step2 r) r 
-     in
-     Reader (\r -> step3 r)
+     in Reader (\r -> step3 r)
 
 ```
 
@@ -361,5 +360,24 @@ prop_bind_var = (Var "x" >>= \_ -> Add (Var "y") (Var "z")) === Add (Var "y") (V
 
 ##### Solution:
 ```haskell
-
+instance Applicative Expr where
+  -- pure :: a -> Expr a
+  pure = Var
+  
+  -- (<*>) :: Expr (a -> b) -> Expr a -> Expr b
+  fe <*> xe = do
+    f <- fe
+    x <- xe
+    return $ f x
+  
+instance Monad Expr where
+  -- return :: a -> Expr a
+  return = pure
+  
+  -- (>>=) :: Expr a -> (a -> Expr b) -> Expr b
+  e >>= f = case e of
+    Var a -> f a
+    Val n -> Val n 
+    Add x y -> Add (x >>= f) (y >>= f)
+   
 ```
