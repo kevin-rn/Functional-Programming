@@ -286,6 +286,28 @@ newtype Writer w a = Writer (w, a)
 
 ##### Solution:
 ```haskell
+instance Functor (Writer w) where
+  -- fmap :: (a -> b) -> Writer w a -> Writer w b
+  fmap f (Writer (w,x)) = Writer (w, (f x))
+  
+instance Monoid w => Applicative (Writer w) where
+  -- pure :: a -> Writer w a
+  pure x = Writer (mempty, x)
+  
+  -- (<*>) :: Writer w (a -> b) -> Writer w a -> Writer w b
+  wf <*> wx = Writer (w1 <> w2, (a b))
+    where
+      (w1, a) = runWriter wf
+      (w2, b) = runWriter wx
+  
+instance Monoid w => Monad (Writer w) where
+  -- return :: a -> Writer w a
+  return   = pure
+  
+  -- (>>=) :: Writer w a -> (a -> Writer w b) -> Writer w b
+  mx >>= f = let (w1, a) = runWriter mx  
+                 (w2, b) = runWriter (f a)
+             in Writer (w1 <> w2, b)
 
 ```
 
