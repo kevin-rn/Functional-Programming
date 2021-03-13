@@ -162,9 +162,7 @@ data Tree a = Node (Tree a) a (Tree a)
 
 ##### Solution:
 ```haskell
-flatten :: Tree a -> [a]
-flatten t = case t of 
-  Leaf -> []
-  Node l m r -> (l >>= flatten) ++ [m] ++ (r >>= flatten)
+
+
 ```
 
