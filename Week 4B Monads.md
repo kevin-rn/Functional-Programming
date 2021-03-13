@@ -232,10 +232,10 @@ instance Monad (Reader r) where
   
   -- (>>=) :: Reader r a -> (a -> Reader r b) -> Reader r b
   mx >>= f = let
-     step1 r = runReader mx r        
-     step2 r = f (step1 r)          
-     step3 r = runReader (step2 r) r 
-     in Reader (\r -> step3 r)
+     a r = runReader mx r        
+     b r = f (a r)          
+     c r = runReader (b r) r 
+     in Reader (\r -> c r)
 
 ```
 
