@@ -167,6 +167,8 @@ flatten t = case t of
   Leaf -> []
   Node l m r -> [m] ++ alternate (flatten l) (flatten r)
 
+--Alternate between the list so each time the head gets appended 
+--instead of going through the whole potential infinite left tree without ever going through the right tree
 alternate :: [a] -> [a] -> [a]
 alternate (x:xs) ys = x : (alternate ys xs)
 alternate [] ys = ys
