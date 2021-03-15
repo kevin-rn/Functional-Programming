@@ -1,7 +1,8 @@
 # Implementing `jq` in Haskell
 
-Use Windows Subsystem for Linux (wsl). Follow the instructions on https://code.visualstudio.com/docs/remote/wsl. 
-cd mnt/C:/Users/username/Documents/jq-clone and type 'sudo apt install jq', afterwards 'code .' so it opens the project in Visual Studio Code.
+Use Windows Subsystem for Linux (wsl). 
+Follow the instructions on https://code.visualstudio.com/docs/remote/wsl.   
+e.g. cd mnt/c/users/username/documents/jq-clone on subsystem, type 'sudo apt install jq', afterwards 'code .' so it opens the project in Visual Studio Code. Make sure to use wsl 2.
 
 `jq` [(stedolan.github.io/jq)](https://stedolan.github.io/jq/) is a JSON processor.
 It's built in the spirit of Unix: doing one thing, but doing it well.
