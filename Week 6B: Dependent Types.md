@@ -30,7 +30,7 @@ infixr 5 _::_
 tail : {A : Set}{n : Nat} → Vec A (suc n) → Vec A n
 tail (x :: xs) = xs
 ```
-
+__________________________________________________________________________________________________________________________________________________
 ### Putting the dots on the vector
 Implement the function dotProduct : {n : Nat} → Vec Nat n → Vec Nat n → Nat that calculates the “dot product” (or scalar product) of two vectors. 
 Note that the type of the function enforces the two vectors to have the same length, so you don’t need to write the clauses where that is not the case.  
@@ -50,7 +50,7 @@ dotProduct : {n : Nat} → Vec Nat n → Vec Nat n → Nat
 dotProduct (x :: xs) (y :: ys) = (x * y) + dotProduct xs ys
 dotProduct _ _ = zero
 ```
-
+__________________________________________________________________________________________________________________________________________________
 ### Vector update
 Implement the function putVec : {A : Set}{n : Nat} → Fin n → A → Vec A n → Vec A n that sets the value at the given position in the vector to the given value, and leaves the rest of the vector unchanged.  
 
@@ -71,7 +71,7 @@ putVec : {A : Set}{n : Nat} → Fin n → A → Vec A n → Vec A n
 putVec zero n (x :: xs) = n :: xs
 putVec (suc i) n (x :: xs) = x :: putVec i n xs
 ```
-
+__________________________________________________________________________________________________________________________________________________
 ### Seeing double
 In the Library code, there are two possible implementations of the (non-dependent) pair type in Agda: one direct one as a datatype, and one type alias for the dependent pair type where the type of the second component ignores its input.   
 Implement two functions from : {A B : Set} → A × B → A ×' B and to : {A B : Set} → A ×' B → A × B converting between the two representations.
@@ -111,7 +111,7 @@ from p = ((fst p) , (snd p))
 to : {A B : Set} → A ×' B → A × B
 to p = ((fstΣ p) , (sndΣ p))
 ```
-
+__________________________________________________________________________________________________________________________________________________
 ### There's lists and there's lists 
 In the Library code, there are two possible implementations of the regular list type in Agda: one direct definition as a datatype, and one type alias for a dependent pair of a natural number n and a vector of length n. Implement two functions from : {A : Set} → List A → List' A and to : {A : Set} → List' A → List A converting between the two representations.
 
