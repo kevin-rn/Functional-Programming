@@ -18,7 +18,7 @@ downFrom (suc n) = n :: (downFrom n)
 ### Tail risks
 Implement the function tail : {A : Set} {n : Nat} → Vec A (suc n) → Vec A n.
 
-##### Solution:
+##### Library: 
 ```haskell
 open import Agda.Builtin.Nat public
 
@@ -26,6 +26,11 @@ data Vec (A : Set) : Nat → Set where
   []    : Vec A zero
   _::_  : {n : Nat} → A → Vec A n → Vec A (suc n)
 infixr 5 _::_
+```
+
+##### Solution:
+```haskell
+open import library
 
 tail : {A : Set}{n : Nat} → Vec A (suc n) → Vec A n
 tail (x :: xs) = xs
@@ -35,7 +40,7 @@ ________________________________________________________________________________
 Implement the function dotProduct : {n : Nat} → Vec Nat n → Vec Nat n → Nat that calculates the “dot product” (or scalar product) of two vectors. 
 Note that the type of the function enforces the two vectors to have the same length, so you don’t need to write the clauses where that is not the case.  
 
-##### Solution:
+##### Library:
 ```haskell
 open import Agda.Builtin.Nat public
 
@@ -43,8 +48,10 @@ data Vec (A : Set) : Nat → Set where
   []    : Vec A zero
   _::_  : {n : Nat} → A → Vec A n → Vec A (suc n)
 infixr 5 _::_
+```
 
-
+##### Solution:
+```haskell
 -- Nat already handles * between Nat so just multiply the heads and add the recursive tail.
 dotProduct : {n : Nat} → Vec Nat n → Vec Nat n → Nat
 dotProduct (x :: xs) (y :: ys) = (x * y) + dotProduct xs ys
@@ -66,7 +73,10 @@ infixr 5 _::_
 data Fin : Nat → Set where
   zero : {n : Nat} → Fin (suc n)
   suc  : {n : Nat} → Fin n → Fin (suc n)
-  
+```
+
+##### Solution:
+```haskell
 putVec : {A : Set}{n : Nat} → Fin n → A → Vec A n → Vec A n
 putVec zero n (x :: xs) = n :: xs
 putVec (suc i) n (x :: xs) = x :: putVec i n xs
