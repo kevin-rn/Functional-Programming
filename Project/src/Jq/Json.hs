@@ -12,7 +12,7 @@ data JSON =
 instance Show JSON where
   show (JNull) = "null"
   show (JString s) = "\"" ++ concatMap showJSonChar s ++ "\""
-  show (JNumber n xs e) = showJNumber (JNumber n xs e)
+  show (JNumber n xs e) = showJNumber n xs e
   show (JBool True)  = "true"
   show (JBool False) = "false"
   show (JArray a) = case a of
@@ -24,12 +24,12 @@ instance Show JSON where
         where
           showPair (k, v) = "\"" ++ concatMap showJSonChar k ++ "\": " ++ show v
 
-showJNumber :: JSON -> String
-showJNumber (JNumber n [] 0) = show n
-showJNumber (JNumber n xs 0) = show n ++ "." ++ concatMap show xs
-showJNumber (JNumber n [] e) = show n ++ "e" ++ show e
-showJNumber (JNumber n xs e) = show n ++ "." ++concatMap show xs ++ "e" ++ show e
-showJNumber _ = ""
+showJNumber :: Integer -> [Int] -> Integer -> String
+showJNumber n [] 0 = show n
+showJNumber n xs 0 = show n ++ "." ++ concatMap show xs
+showJNumber n [] e = show n ++ "e" ++ show e
+showJNumber n xs e = show n ++ "." ++concatMap show xs ++ "e" ++ show e
+
 
 showJSonChar :: Char -> String
 showJSonChar '\b' = "\\b"     -- backspace

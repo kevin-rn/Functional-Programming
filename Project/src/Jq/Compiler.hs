@@ -7,6 +7,14 @@ import           Jq.Json
 type JProgram a = JSON -> Either String a
 
 compile :: Filter -> JProgram [JSON]
+compile (ValueNull) _ = Right [JNull]
+compile (ValueBool bool) _ = Right [JBool bool]
+compile (ValueNumber num frac exponential) _ = Right [JNumber num frac exponential]
+compile (ValueString chars) _ = Right [JString chars]
+compile (ValueArray arr) inp = case (getArrayElements arr inp) of
+    Right elements -> Right [JArray elements]
+    Left msg -> Left msg
+compile (ValueObject obj) _ = Right [JNull]
 compile (Identity) inp = return [inp]
 compile (Parenthesis obj) inp = compile obj inp
 -- Handle (optional) Object indexing
@@ -32,12 +40,12 @@ compile (OptArrIdx idx) inp = case inp of
     _ -> Right []
 -- Handle (optional) Array/String Slicing
 compile (Slicer start end) inp = case inp of
-    JArray arr -> let len = (length arr) in Right [getSlice (checkNegIdx start len) (checkNegIdx end len) inp]
-    JString chars -> let len = (length chars) in Right [getSlice (checkNegIdx start len) (checkNegIdx end len) inp]
+    JArray arr -> let len = (length arr) in Right [getSlice (checkNegIdx s len) (checkNegIdx e len) inp | (s, e) <- getCombinations start end]
+    JString chars -> let len = (length chars) in Right [getSlice (checkNegIdx s len) (checkNegIdx e len) inp | (s, e) <- getCombinations start end]
     _ -> Left "Error: Cannot slice non-array/non-object"
 compile (OptSlicer start end) inp = case inp of
-    JArray arr -> let len = (length arr) in Right [getSlice (checkNegIdx start len) (checkNegIdx end len) inp]
-    JString chars -> let len = (length chars) in Right [getSlice (checkNegIdx start len) (checkNegIdx end len) inp]
+    JArray arr -> let len = (length arr) in Right [getSlice (checkNegIdx s len) (checkNegIdx e len) inp | (s, e) <- getCombinations start end]
+    JString chars -> let len = (length chars) in Right [getSlice (checkNegIdx s len) (checkNegIdx e len) inp | (s, e) <- getCombinations start end]
     _ -> Right []
 -- Handle (optional) Array/Object Iterator
 compile (Iterator idxs) inp = case inp of
@@ -58,14 +66,24 @@ compile (CommaOperator c1 c2) inp = case ((compile c1 inp), (compile c2 inp)) of
     (_            , _            ) -> Left "Error: Cannot parse improper comma format"
 compile (PipeOperator p1 p2) inp = case (compile p1 inp) of
     Right result1 -> handlePipes (compile p2) result1
-    _ -> Left "Error: Cannot parse improper pipe format"
+    _ ->  Left "Error: Cannot parse improper pipe format"
 
 run :: JProgram [JSON] -> JSON -> Either String [JSON]
 run p j = p j
 
--- Check if negative is negative, if so then offset the index with a certain length to be positive else return the original index.
+getArrayElements :: [Filter]-> JSON -> Either String [JSON]
+getArrayElements [] _ = Right []
+getArrayElements (x:xs) inp = case (compile x inp) of
+    Right result1 -> case (getArrayElements xs inp) of
+        Right result2 -> Right (result1 ++ result2)
+        Left msg -> Left msg
+    Left msg -> Left msg
+
+-- Check if negative is negative, if so then offset the index with a input length.
+-- Check second time if new index is positive and return else set it to 0.
 checkNegIdx :: Int -> Int -> Int
-checkNegIdx idx len = if idx < 0 then len + idx else idx
+checkNegIdx idx len = if idx < 0 then let newidx = len + idx in if newidx < 0 then 0 else newidx
+                      else idx
 
 -- Get the value in the object at a certain index or return null.
 getObjectValue :: String -> [(String, JSON)] -> JSON
@@ -77,6 +95,9 @@ getArrayValue :: Int -> [JSON] -> JSON
 getArrayValue _ [] = JNull
 getArrayValue idx (x:xs) = if idx == 0 then x else getArrayValue (idx - 1) xs
 
+getCombinations :: [Int] -> [Int] -> [(Int, Int)]
+getCombinations xs ys = [(x,y) | x <- xs, y <- ys]
+
 -- Get the values(s) in the range start to end within the string or array.
 getSlice :: Int -> Int -> JSON -> JSON
 getSlice    _     _   (JString "") = JString ""
@@ -86,6 +107,7 @@ getSlice    start end (JArray arr) = if end > start then JArray (take (end - sta
 
 handlePipes :: (JProgram [JSON]) -> [JSON] -> Either String [JSON]
 handlePipes _ [] = Left "Error: Cannot parse improper pipe format"
+handlePipes f [x] = f x
 handlePipes f (x:xs) = case (f x) of 
     Right value -> case (handlePipes f xs) of 
         Right values -> Right (value ++ values)

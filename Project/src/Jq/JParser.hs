@@ -35,8 +35,7 @@ parseJString = JString <$> (char '"' *> many jChar <* char '"')
 parseJArray :: Parser JSON
 parseJArray = (JArray <$> (char '[' *> space *> (jArr <|> pure [])) <* space <* char ']')
     where
-        jElem = char ',' *> parseJSON                                                   -- parse single array element seperated by ,
-        jArr = (:) <$> parseJSON <*> many jElem                                         -- concatenate one or multiple array elements
+        jArr = (:) <$> parseJSON <*> many (char ',' *> parseJSON)                                         -- concatenate one or multiple array elements
 
 parseJObject :: Parser JSON
 parseJObject = (JObject <$> (char '{' *> space *> (jObj <|> pure [])) <* space <* char '}')
