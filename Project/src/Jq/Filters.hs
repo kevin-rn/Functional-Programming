@@ -4,19 +4,19 @@ import Data.List
 data Filter = 
   -- Filters
     Identity
-  | Parenthesis { parent :: Filter }                           -- Parenthesis
-  | ObjIdx { objIdx :: String}                                 -- Object indexing
-  | OptObjIdx { optObIdx :: String}                            -- Optional Object indexing
-  | GenericObjIdx { genObjIdx :: [String]}                     -- Generic Object indexing
-  | OptGenericObjIdx { genObjIdx :: [String]}                  -- Optional Generic Object Indexing
-  | ArrIdx { arrIdx :: Int }                                   -- Array indexing
-  | OptArrIdx { arrIdx :: Int }                                -- Optional Array indexing
-  | Slicer {arrStart :: [Int], arrEnd :: [Int]}                    -- Array Slicer
-  | OptSlicer {arrStart :: [Int], arrEnd :: [Int]}                 -- Optional Array Slicer
-  | Iterator { iterIdx :: [Int]}                               -- Array/Object Value Iterator
-  | OptIterator { iterIdx :: [Int]}                            -- Optional Array/Object Value Iterator
-  | CommaOperator {comma1 :: Filter, comma2 :: Filter}               -- Comma Operator
-  | PipeOperator {pipe1 :: Filter, pipe2 :: Filter}                  -- Pipe Operator
+  | Parenthesis { parent :: Filter }                         -- Parenthesis
+  | ObjIdx { objIdx :: String}                               -- Object indexing
+  | OptObjIdx { optObIdx :: String}                          -- Optional Object indexing
+  | GenericObjIdx { genObjIdx :: Filter}                     -- Generic Object indexing
+  | OptGenericObjIdx { genObjIdx :: Filter}                  -- Optional Generic Object Indexing
+  | ArrIdx { arrIdx :: Int }                                 -- Array indexing
+  | OptArrIdx { arrIdx :: Int }                              -- Optional Array indexing
+  | Slicer {arrStart :: Filter, arrEnd :: Filter}            -- Array Slicer
+  | OptSlicer {arroptStart :: Filter, arroptEnd :: Filter}   -- Optional Array Slicer
+  | Iterator { iterIdx :: [Filter]}                            -- Array/Object Value Iterator
+  | OptIterator { iterIdx :: [Filter]}                         -- Optional Array/Object Value Iterator
+  | CommaOperator {commas :: [Filter]}                       -- Comma Operator
+  | PipeOperator {pipes :: [Filter]}                         -- Pipe Operator
   -- Value constructors
   | ValueNull
   | ValueBool { boolean :: Bool }
@@ -34,12 +34,12 @@ instance Show Filter where
   show (OptGenericObjIdx index) = ".[" ++ show index ++ "]?"
   show (ArrIdx index) = ".[" ++ show index ++ "]"
   show (OptArrIdx index) = ".[" ++ show index ++ "]?"
-  show (Slicer start end) = ".[" ++ (intercalate (",") (map show start)) ++ ":" ++ (intercalate (",") (map show end)) ++ "]"
-  show (OptSlicer start end) = ".[" ++ (intercalate (",") (map show start)) ++ ":" ++ (intercalate (",") (map show end)) ++ "]?"
+  show (Slicer start end) = ".[" ++ show start ++ ":" ++ show end ++ "]"
+  show (OptSlicer start end) = ".[" ++ show start ++ ":" ++ show end ++ "]?"
   show (Iterator idxs) = ".[" ++ (intercalate (",") (map show idxs)) ++ "]"
   show (OptIterator idxs) = ".[" ++ (intercalate (",") (map show idxs)) ++ "]?"
-  show (CommaOperator c1 c2) = show c1 ++ ", " ++ show c2
-  show (PipeOperator p1 p2) = show p1 ++ " | " ++ show p2
+  show (CommaOperator commaList) = intercalate (",") (map show commaList)
+  show (PipeOperator pipeList) = intercalate ("|") (map show pipeList)
   -- Show value constructors
   show (ValueNull) = "null"
   show (ValueString s) = "\"" ++ concatMap showFilterChar s ++ "\""

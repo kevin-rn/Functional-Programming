@@ -24,6 +24,15 @@ instance Show JSON where
         where
           showPair (k, v) = "\"" ++ concatMap showJSonChar k ++ "\": " ++ show v
 
+instance Eq JSON where
+  (JString a) == (JString b) = a == b
+  (JNumber a f1 e1) == (JNumber b f2 e2) = a == b && f1 == f2 && e1 == e2
+  (JBool a) == (JBool b) = a == b
+  (JObject a) == (JObject b) = a == b
+  (JArray a) == (JArray b) = a == b
+  JNull == JNull = True 
+  _ == _ = False
+
 showJNumber :: Integer -> [Int] -> Integer -> String
 showJNumber n [] 0 = show n
 showJNumber n xs 0 = show n ++ "." ++ concatMap show xs

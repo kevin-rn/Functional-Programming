@@ -41,8 +41,7 @@ parseJObject :: Parser JSON
 parseJObject = (JObject <$> (char '{' *> space *> (jObj <|> pure [])) <* space <* char '}')
     where
         maptuple = (\ ~(JString key) value -> (key, value))                             -- map values of the string key and json value to a tuple
-        keystr = space *> parseJString <* space                                         -- remove spaces surrounding the key string.
-        jTuple =  maptuple <$> keystr <* char ':' <*> parseJSON                         -- chain them together
+        jTuple =  maptuple <$> token (parseJString) <* char ':' <*> parseJSON           -- chain them together
         jObj = (:) <$> jTuple <*> many (char ',' *> jTuple)                             -- concatenate one or multiple key value pairs
 
 parseJSON :: Parser JSON
