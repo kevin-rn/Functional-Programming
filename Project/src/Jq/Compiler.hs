@@ -14,7 +14,7 @@ compile (ValueString chars) _ = Right [JString chars]
 compile (ValueArray arr) inp = case (getArrayElements arr inp) of
     Right elements -> Right [JArray elements]
     Left msg -> Left msg
-compile (ValueObject obj) _ = Right [JNull]
+compile (ValueObject obj) inp = getObjectElements obj inp
 compile (Identity) inp = return [inp]
 compile (Parenthesis obj) inp = compile obj inp
 
@@ -100,6 +100,17 @@ getArrayElements (x:xs) inp = case (compile x inp) of
         Right result2 -> Right (result1 ++ result2)
         Left msg -> Left msg
     Left msg -> Left msg
+
+getObjectElements :: [(Filter, Filter)] -> JSON -> Either String [JSON]
+getObjectElements [] inp = Right []
+getObjectElements [(key, value)] input = case (compile key input, compile value input) of
+    (Right [JString chars], Right a) -> Right [JObject [(chars, head a)]]
+    (_, _) -> Left "Error: invalid key value for object"
+getObjectElements ((key, value):xs) input = case (getObjectElements xs input) of
+    Left msg -> Left msg
+    Right values -> case (compile key input, compile value input) of
+        (Right [JString chars], Right a) -> Right ([JObject [(chars, head a)]] ++ values)
+        (_, _) -> Left "Error: invalid key value for object"
 
 -- Converts string to floating point number
 convertNumber :: String -> Float

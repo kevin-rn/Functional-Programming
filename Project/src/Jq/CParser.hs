@@ -63,21 +63,21 @@ parseParenthesis = token $ char '(' *> parseFilter <* char ')'
 
 -- Object indexing e.g. .field or Optional Object indexing e.g. .field?
 parseObjectIndex :: Parser Filter
-parseObjectIndex = token $ (OptObjIdx <$> ((indexstring <|> alternativestring) <* token (char '?'))) <|> (ObjIdx <$> (indexstring <|> alternativestring))
+parseObjectIndex = token $ (OptObjIdx <$> ((indexstring <|> alternativestring) <* some (token (char '?')))) <|> (ObjIdx <$> (indexstring <|> alternativestring))
   where
     indexstring = token (char '.') *> char '"' *> many valueChar <* char '"'
     alternativestring = space *> char '.' *> ((:) <$> (letter <|> char '_') <*> many (sat (\x -> isAlphaNum x || x == '_')))
 
 -- Optional Generic object indexing e.g. .["field"]? or Generic object indexing e.g. .["field"]
 parseGenericObjectIndex :: Parser Filter
-parseGenericObjectIndex = token $ (OptGenericObjIdx <$> (indices <* token (char '?'))) <|> (GenericObjIdx <$> indices)
+parseGenericObjectIndex = token $ (OptGenericObjIdx <$> (indices <* some (token (char '?')))) <|> (GenericObjIdx <$> indices)
   where
     parseGenObjIdx = parsePipe <|> parseComma <|> parseSlicer <|> parseGenericObjectIndex <|> parseObjectIndex <|> parseArrayIndex <|> parseIterator <|> parseParenthesis <|> parseIdentity 
                   <|> parseValueNull <|> parseValueBool <|> parseValueString <|> parseValueArray <|> parseValueObject
     indices = char '.' *> token (char '[') *> token (parseGenObjIdx <|> pure (ValueString "")) <* token (char ']')
 
 parseArrayIndex :: Parser Filter
-parseArrayIndex = token $ (OptArrIdx <$> (index <* token (char '?'))) <|> (ArrIdx <$> index)
+parseArrayIndex = token $ (OptArrIdx <$> (index <* some (token (char '?')))) <|> (ArrIdx <$> index)
   where
     index = (char '.' *> space *> char '[' *> token (integer) <* char ']')
 
@@ -87,11 +87,11 @@ parseSlicer = token $ (optSlice <|> optSliceAlt <|> normalSlice <|> normalSliceA
     indices = (char '(' *> token parseFilter <* char ')') <|> token parseFilter
     normalSlice = (char '.') *> space *> (char '[') *>  (Slicer <$> (indices <|> pure ValueNull) <*> (token (char ':') *> indices)) <* token (char ']')  -- handles [0:1] and [0:] type of slices
     normalSliceAlt = (char '.') *> space *> (char '[') *> (Slicer <$> (indices) <*> (token (char ':') *> pure ValueNull)) <* token (char ']')         -- handles [:1] type of slices
-    optSlice = (char '.') *> space *> (char '[') *>  (OptSlicer <$> (indices <|> pure ValueNull) <*> (token (char ':') *> indices)) <* token (char ']') <* (char '?')
-    optSliceAlt = (char '.') *> space *> (char '[') *> (OptSlicer <$> (indices) <*> (token (char ':') *> pure ValueNull)) <* token (char ']') <* (char '?')
+    optSlice = (char '.') *> space *> (char '[') *>  (OptSlicer <$> (indices <|> pure ValueNull) <*> (token (char ':') *> indices)) <* token (char ']') <* some (token (char '?'))
+    optSliceAlt = (char '.') *> space *> (char '[') *> (OptSlicer <$> (indices) <*> (token (char ':') *> pure ValueNull)) <* token (char ']') <* some (token (char '?'))
 
 parseIterator :: Parser Filter
-parseIterator = token $ (OptIterator <$> iter <* token (char '?')) <|> (Iterator <$> iter)
+parseIterator = token $ (OptIterator <$> iter <* some (token (char '?'))) <|> (Iterator <$> iter)
   where
     parseIter = parsePipe <|> parseComma <|> parseSlicer <|> parseGenericObjectIndex <|> parseObjectIndex <|> parseArrayIndex <|> parseIterator <|> parseParenthesis <|> parseIdentity 
               <|> parseValueNull <|> parseValueBool <|> parseValueNumber <|> parseValueArray <|> parseValueObject
