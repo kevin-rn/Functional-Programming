@@ -366,10 +366,6 @@ If you are unsure where to start or feeling a bit lost, you can approach the pro
 6. Add value construction and make sure that composed operations have the right semantics.
 7. Proceed with the rest of the assignments.
 
-If you have questions about a part of the project, you can create a question on
-Stack Overflow at
-[stackoverflow.com/c/tud-cs/](https://stackoverflow.com/c/tud-cs/). Remember to
-phrase your question in general terms and avoid including part of your code.
-Alternatively, you can ask questions to one of the teaching assistants during
-the weekly lab sessions, or send an email to
-[fp-cs-ewi@tudelft.nl](mailto:fp-cs-ewi@tudelft.nl).
+### Creating zip
+
+Use the command: git archive HEAD -o submission.zip
