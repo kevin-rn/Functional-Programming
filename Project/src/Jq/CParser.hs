@@ -3,22 +3,12 @@ module Jq.CParser where
 import Parsing.Parsing
 import Jq.Filters
 import Data.Char(digitToInt, isAlphaNum)
+import Jq.JParser (jChar)
 
--- Handle value constructors
-valueChar :: Parser Char
-valueChar = '\b' <$ string "\\b"                       -- backspace
-       <|> '\f' <$ string "\\f"                        -- feed forward
-       <|> '\n' <$ string "\\n"                        -- newline
-       <|> '\r' <$ string "\\r"                        -- carriage return
-       <|> '\t' <$ string "\\t"                        -- tab
-       <|> '\\' <$ string "\\\\"                       -- 
-       <|> '"' <$ string "\\\""                        -- quotation mark
-       <|> '/' <$ string "\\/"                         -- solidus
-       <|> sat (\c -> not (c == '\"' || c == '\\'))
-
+---------- Value Constructors ----------
 parseValueNull :: Parser Filter
 parseValueNull = do
-        _ <- token (string "null") <* optional (token (char '?'))
+        _ <- symbol "null"<* optional (token (char '?'))
         return ValueNull
 
 parseValueBool :: Parser Filter
@@ -32,25 +22,28 @@ parseValueNumber = token (ValueNumber <$> valueNum <*> valueFract <*> valueExp <
         valueExp = (char 'E' <|> char 'e') *> optional (char '+') *> (fromIntegral <$> integer) <|> pure 0  -- handle the exponential part
 
 parseValueString :: Parser Filter
-parseValueString = token (ValueString <$> (char '"' *> many valueChar <* char '"' <* optional (token (char '?'))))
+parseValueString = token (ValueString <$> (char '"' *> many jChar <* char '"' <* optional (token (char '?'))))
 
 parseValueArray :: Parser Filter
 parseValueArray = token (ValueArray <$> (char '[' *> space *> (valueArr <|> pure [])) <* space <* char ']' <* optional (token (char '?')) )
     where
-        valueArr = (:) <$> parseFilter <*> many (char ',' *> parseFilter)                             -- concatenate one or multiple array elements
+        valueArr = (:) <$> (parsePipe <|> parseOthers) <*> many (char ',' *> (parsePipe <|> parseOthers))                             -- concatenate one or multiple array elements
 
 parseValueObject :: Parser Filter
-parseValueObject = token (ValueObject <$> (char '{' *> space *> (valueObj <|> pure [])) <* space <* char '}' <* optional (token (char '?')) )
+parseValueObject = token (ValueObject <$> (token (char '{') *> valueTuple <* token (char '}') <* optional (token (char '?')) ))
     where
-        maptuple = (\ key value -> (key, value))                                     -- map values of the string key and json value to a tuple
-        keystr = space *> parseValueString <* space                                                 -- remove spaces surrounding the key string.
-        valueTuple =  maptuple <$> keystr <* char ':' <*> parseFilter                                -- chain them together
-        valueObj = (:) <$> valueTuple <*> many (char ',' *> valueTuple)                             -- concatenate one or multiple key value pairs
+        normaltuple =  ((\ ~(ValueString chars) value -> (ValueString chars, value)) <$> token parseValueString <* char ':' <*> (parsePipe <|> parseOthers))
+        alttuple = ((\key value -> (ValueString key, value)) <$> ((:) <$> (letter <|> char '_') <*> many ((alphanum <|> char '_'))) <*> (parsePipe <|> parseOthers))
+        parenthesisTuple = ((,) <$> parseParenthesis <* char ':' <*> (parsePipe <|> parseOthers))
+        keyTuple = ((\ chars -> (ValueString chars, ObjIdx chars)) <$> ((:) <$> (letter <|> char '_') <*> many ((alphanum <|> char '_'))))
+        tuple = normaltuple <|> alttuple <|> parenthesisTuple <|> keyTuple
+        valueTuple =  (:) <$> tuple <*> many (token (char ',') *> tuple) <|> pure []
 
 parseValueConstructor :: Parser Filter
 parseValueConstructor = parseValueNull <|> parseValueBool  <|> parseValueNumber <|> parseValueString <|> parseValueArray <|> parseValueObject
 
-------- handle Filters -------------
+
+---------- Basic Filters ----------
 
 parseIdentity :: Parser Filter
 parseIdentity = do
@@ -65,7 +58,7 @@ parseParenthesis = token $ char '(' *> parseFilter <* char ')'
 parseObjectIndex :: Parser Filter
 parseObjectIndex = token $ (OptObjIdx <$> ((indexstring <|> alternativestring) <* some (token (char '?')))) <|> (ObjIdx <$> (indexstring <|> alternativestring))
   where
-    indexstring = token (char '.') *> char '"' *> many valueChar <* char '"'
+    indexstring = token (char '.') *> char '"' *> many jChar <* char '"'
     alternativestring = space *> char '.' *> ((:) <$> (letter <|> char '_') <*> many (sat (\x -> isAlphaNum x || x == '_')))
 
 -- Optional Generic object indexing e.g. .["field"]? or Generic object indexing e.g. .["field"]
@@ -136,10 +129,45 @@ parsePipe = token $ (PipeOperator <$> ((:) <$> token (parseComma <|> parseOthers
 
 -- Version without the parseComma or parsePipe to avoid infinite recursion
 parseOthers :: Parser Filter
-parseOthers = parseSlicer <|> parseArrayIndex <|> parseIterator <|> parseGenericObjectIndex <|> parseObjectIndex <|> parseParenthesis <|> parseIdentity <|> parseValueConstructor
+parseOthers = parseAdvancedFilters <|> parseSlicer <|> parseArrayIndex <|> parseIterator <|> parseGenericObjectIndex <|> parseObjectIndex <|> parseParenthesis <|> parseIdentity <|> parseValueConstructor
+
+---------- Advanced Filters ----------
+parseRecursiveDescent :: Parser Filter
+parseRecursiveDescent = do
+        _ <- symbol ".."
+        return RecursiveDescent
+
+parseEquality :: Parser Filter
+parseEquality = token $ (Equal <$> token parseAdvancedFiltersAlt <*> (symbol "==" *> token parseAdvancedFiltersAlt))
+                  <|> (Unequal <$> token parseAdvancedFiltersAlt <*> (symbol "!=" *> token parseAdvancedFiltersAlt))
+
+parseIfElse :: Parser Filter
+parseIfElse = token $ (IfElse <$> (symbol "if" *> token parseAdvancedFiltersAlt) <*> (symbol "then" *> token parseAdvancedFiltersAlt) <*> (symbol "else" *> token parseAdvancedFiltersAlt <* symbol "end"))
+
+parseComparison :: Parser Filter
+parseComparison = token $ (LowerThen <$> token parseAdvancedFiltersAlt <*> (symbol "<" *> token parseAdvancedFiltersAlt)) 
+                      <|> (GreaterThen <$> token parseAdvancedFiltersAlt <*> (symbol ">" *> token parseAdvancedFiltersAlt))
+                      <|> (LowerEq     <$> token parseAdvancedFiltersAlt <*> (symbol "<=" *> token parseAdvancedFiltersAlt))
+                      <|> (GreaterEq   <$> token parseAdvancedFiltersAlt <*> (symbol ">=" *> token parseAdvancedFiltersAlt))
+
+parseLogicConnectives :: Parser Filter
+parseLogicConnectives = token $ (AndLogic <$> token parseAdvancedFiltersAlt <*> (symbol "and" *> token parseAdvancedFiltersAlt)) 
+                      <|> (OrLogic <$> token parseAdvancedFiltersAlt <*> (symbol "or" *> token parseAdvancedFiltersAlt))
+
+parseNotLogic :: Parser Filter
+parseNotLogic = do
+        _ <- symbol "not"
+        return NotLogic
+
+parseAdvancedFilters :: Parser Filter
+parseAdvancedFilters = parseRecursiveDescent <|> parseIfElse <|> parseEquality <|> parseComparison <|> parseLogicConnectives <|> parseNotLogic
+
+parseAdvancedFiltersAlt :: Parser Filter
+parseAdvancedFiltersAlt = parseSlicer <|> parseArrayIndex <|> parseIterator <|> parseGenericObjectIndex <|> parseObjectIndex <|> parseParenthesis <|> parseIdentity <|> parseValueConstructor
 
 parseFilter :: Parser Filter
-parseFilter = parsePipe <|> parseComma <|> parseSlicer <|> parseArrayIndex <|> parseIterator <|> parseGenericObjectIndex <|> parseObjectIndex <|> parseParenthesis <|> parseIdentity <|> parseValueConstructor
+parseFilter = parsePipe <|> parseComma <|> parseAdvancedFilters <|> parseSlicer <|> parseArrayIndex <|> parseIterator <|> parseGenericObjectIndex 
+  <|> parseObjectIndex <|> parseParenthesis <|> parseIdentity <|> parseValueConstructor
 --  <|> parseValuePipe <|> 
 parseConfig :: [String] -> Either String Config
 parseConfig s = case s of

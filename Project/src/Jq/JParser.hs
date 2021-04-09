@@ -2,20 +2,25 @@ module Jq.JParser where
 
 import Parsing.Parsing
 import Jq.Json
-import Data.Char(digitToInt)
+import Data.Char(digitToInt, isHexDigit, chr, digitToInt)
+import Control.Monad (replicateM)
 
 -- Helper method for properly escaping some JSON characters.
 -- TODO: Include handling unicode characters
 jChar :: Parser Char
 jChar = '\b' <$ string "\\b"                         -- backspace
-     <|> '\f' <$ string "\\f"                        -- feed forward
-     <|> '\n' <$ string "\\n"                        -- newline
-     <|> '\r' <$ string "\\r"                        -- carriage return
-     <|> '\t' <$ string "\\t"                        -- tab
-     <|> '\\' <$ string "\\\\"                       -- slash
-     <|> '"' <$ string "\\\""                        -- quotation mark
-     <|> '/' <$ string "\\/"                         -- solidus
-     <|> sat (\c -> not (c == '\"' || c == '\\'))
+    <|> '\f' <$ string "\\f"                        -- feed forward
+    <|> '\n' <$ string "\\n"                        -- newline
+    <|> '\r' <$ string "\\r"                        -- carriage return
+    <|> '\t' <$ string "\\t"                        -- tab
+    <|> '\\' <$ string "\\\\"                       -- slash
+    <|> '"' <$ string "\\\""                        -- quotation mark
+    <|> '/' <$ string "\\/"                         -- solidus
+    <|> let hexDigit = digitToInt <$> sat isHexDigit in  chr . fromIntegral . digitsToNumber 16 0 <$> (string "\\u" *> replicateM 4 hexDigit) -- unicode
+    <|> sat (\s -> not (s == '\"' || s == '\\' || s `elem` ['\0' .. '\31'])) --string (exlcuding quotation, slash and unicode thats not parsed)
+
+digitsToNumber :: Int -> Integer -> [Int] -> Integer
+digitsToNumber base = foldl (\num d -> num * fromIntegral base + fromIntegral d)
 
 -- null
 parseJNull :: Parser JSON

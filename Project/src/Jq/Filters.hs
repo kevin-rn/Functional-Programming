@@ -1,5 +1,6 @@
 module Jq.Filters where
 import Data.List
+import Jq.Json (showJNumber, addSpace, showJSonChar)
 
 data Filter = 
   -- Filters
@@ -11,8 +12,8 @@ data Filter =
   | OptGenericObjIdx { genObjIdx :: Filter}                  -- Optional Generic Object Indexing
   | ArrIdx { arrIdx :: Int }                                 -- Array indexing
   | OptArrIdx { arrIdx :: Int }                              -- Optional Array indexing
-  | Slicer {arrStart :: Filter, arrEnd :: Filter}            -- Array Slicer
-  | OptSlicer {arroptStart :: Filter, arroptEnd :: Filter}   -- Optional Array Slicer
+  | Slicer {arrStart, arrEnd :: Filter}            -- Array Slicer
+  | OptSlicer {arroptStart, arroptEnd :: Filter}   -- Optional Array Slicer
   | Iterator { iterIdx :: [Filter]}                          -- Array/Object Value Iterator
   | OptIterator { iterIdx :: [Filter]}                       -- Optional Array/Object Value Iterator
   | CommaOperator {commas :: [Filter]}                       -- Comma Operator
@@ -24,6 +25,18 @@ data Filter =
   | ValueString { str :: String }
   | ValueArray { list :: [Filter] }
   | ValueObject { pairs :: [(Filter, Filter)]}
+  -- Advanced Filters
+  | RecursiveDescent
+  | Equal { left, right :: Filter }
+  | Unequal { left, right :: Filter }
+  | IfElse { conditional, ifcase, elsecase :: Filter}
+  | LowerThen { left, right :: Filter }
+  | GreaterThen { left, right :: Filter }
+  | LowerEq { left, right :: Filter }
+  | GreaterEq { left, right :: Filter }
+  | AndLogic { left, right :: Filter }
+  | OrLogic { left, right :: Filter }
+  | NotLogic
 
 instance Show Filter where
   show (Identity)                = "."
@@ -42,44 +55,28 @@ instance Show Filter where
   show (PipeOperator pipeList)   = intercalate ("|") (map show pipeList)
   -- Show value constructors
   show (ValueNull)               = "null"
-  show (ValueString s)           = "\"" ++ concatMap showFilterChar s ++ "\""
-  show (ValueNumber n xs e)      = showValueNumber n xs e
+  show (ValueString s)           = "\"" ++ concatMap showJSonChar s ++ "\""
+  show (ValueNumber n xs e)      = showJNumber n xs e
   show (ValueBool True)          = "true"
   show (ValueBool False)         = "false"
   show (ValueArray a)            = case a of
       [] -> "[]"
       _ ->  addSpace ("[\n" ++ (intercalate (",\n") (map show a))) ++ "\n]"
-  -- show (ValueObject o) = case o of 
-  --     [] -> "{}" 
-  --     _ -> addSpace ("{\n" ++ (intercalate (",\n") (map showPair o))) ++ "\n}"
-  --       where
-  --         showPair (k, v) = "\"" ++ concatMap showFilterChar k ++ "\": " ++ show v
-
--- Helper method for properly formatting the JSON number.
-showValueNumber :: Integer -> [Int] -> Integer -> String
-showValueNumber n [] 0 = show n
-showValueNumber n xs 0 = show n ++ "." ++ concatMap show xs
-showValueNumber n [] e = show n ++ "e" ++ show e
-showValueNumber n xs e = show n ++ "." ++ concatMap show xs ++ "e" ++ show e
-
--- Helper method for properly escaping some JSON characters.
--- TODO: Include handling unicode characters
-showFilterChar :: Char -> String
-showFilterChar '\b' = "\\b"     -- backspace
-showFilterChar '\f' = "\\f"     -- form feed
-showFilterChar '\n' = "\\n"     -- newline
-showFilterChar '\r' = "\\r"     -- carriage return
-showFilterChar '\t' = "\\t"     -- tab
-showFilterChar '\'' = "'"       -- reverse solidus
-showFilterChar '\\' = "\\\\"    -- slash
-showFilterChar '\"' =  "\\\""   -- quotation mark
-showFilterChar '/' = "\\/"      -- solidus
-showFilterChar s = [s]          -- string
-
--- Used to pretty print the strings of the Show method.
-addSpace :: String -> String
-addSpace ('\n':xs) = "\n  " ++ addSpace xs 
-addSpace (x:xs) = [x] ++ addSpace xs
-addSpace _ = []
+  show (ValueObject o) = case o of 
+      [] -> "{}" 
+      _ -> addSpace ("{\n" ++ (intercalate (",\n") (map showPair o))) ++ "\n}"
+        where
+          showPair (k, v) = "\"" ++ show k ++ "\": " ++ show v
+  show (RecursiveDescent)        = ".."
+  show (Equal e1 e2)             = show e1 ++ " == " ++ show e2
+  show (Unequal e1 e2)           = show e1 ++ " != " ++ show e2
+  show (IfElse c e1 e2)          = "if " ++ show c ++ " then " ++ show e1 ++ " else " ++ show e2 ++ " end"
+  show (LowerThen e1 e2)         = show e1 ++ " < " ++ show e2
+  show (GreaterThen e1 e2)       = show e1 ++ " > " ++ show e2
+  show (LowerEq e1 e2)           = show e1 ++ " <= " ++ show e2
+  show (GreaterEq e1 e2)         = show e1 ++ " >= " ++ show e2
+  show (AndLogic e1 e2)          = show e1 ++ " and " ++ show e2
+  show (OrLogic e1 e2)           = show e1 ++ " or " ++ show e2
+  show (NotLogic)                = "not"
 
 data Config = ConfigC {filters :: Filter}

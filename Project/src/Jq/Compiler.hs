@@ -14,94 +14,198 @@ compile (ValueString chars) _ = Right [JString chars]
 compile (ValueArray arr) inp = case (getArrayElements arr inp) of
     Right elements -> Right [JArray elements]
     Left msg -> Left msg
-compile (ValueObject obj) inp = getObjectElements obj inp
+compile (ValueObject []) _ = Right [JObject []]
+compile (ValueObject obj) inp = case (checkCompileError convertFlatten) of      -- check if the converted list has errors
+    Left msg -> Left msg
+    _ -> let tuples = (jsonList convertFlatten) in case checkAllKeys tuples of     -- Check if the keys are strings
+        Left msg -> Left msg
+        _ -> Right [JObject (removeDuplicateKeys keyvalue []) | keyvalue <- getKeyValuePairs (convertAllKeys tuples) ] -- Return list of objects with all possible unique key-value pairs
+    where
+        -- Creates list of [(Either String [JSON], Either String [JSON])]
+        compiledKeyValues = [(compile k inp, compile v inp) | (k,v) <- obj]
+        -- Changes list from [(Either String [JSON], Either String [JSON])] to [Either String ([JSON], [JSON])]
+        convertFlatten = (flattenCompiledKeyValues compiledKeyValues)
+        -- changes list from [Either String ([JSON], [JSON])]to [([JSON], [JSON])]
+        jsonList = map (\(Right x) -> x)
 
--- Handle identity
+-- Handle Basic Filters
 compile (Identity) inp = return [inp]
-
--- Handle parenthesis
 compile (Parenthesis obj) inp = compile obj inp
-
--- Handle (optional) Object indexing
 compile (ObjIdx idx) inp = case inp of 
     JObject obj -> Right [getObjectValue idx obj]
-    _ -> Left "Error: Cannot index non-JSON object using string"
+    JNumber{}   -> Left "Error: cannot iterate over integer"
+    JBool{}     -> Left "Error: cannot iterate over boolean"
+    JString{}   -> Left "Error: cannot iterate over string"
+    JArray{}    -> Left "Error: cannot iterate over array"
+    _ -> Right [JNull]
 compile (OptObjIdx idx) inp = case inp of 
     JObject obj -> Right [getObjectValue idx obj]
+    JNull -> Right [JNull]
     _ -> Right []
-
--- Handle (optional) Generic Object indexing
 compile (GenericObjIdx idx) inp = case (compile idx inp) of
     Left msg -> Left msg
     Right indices -> case inp of 
         JObject obj -> (getGenObjectValue indices obj False)
-        _ -> Left "Error: Cannot index non-JSON object"
+        JNumber{}   -> Left "Error: cannot iterate over integer"
+        JBool{}     -> Left "Error: cannot iterate over boolean"
+        JString{}   -> Left "Error: cannot iterate over string"
+        JArray{}    -> Left "Error: cannot iterate over array"
+        JNull-> Right [JNull]
 compile (OptGenericObjIdx idx) inp = case (compile idx inp) of
     Left msg -> Left msg
     Right indices -> case inp of 
         JObject obj -> (getGenObjectValue indices obj True)
+        JNull -> Right [JNull]
         _ -> Right []
-
--- Handle (optional) Array indexing
 compile (ArrIdx idx) inp = case inp of
     JArray arr ->  Right [getArrayValue (checkNegIdx idx (length arr)) arr]
     _ -> Left "Error: Cannot index non-array"
 compile (OptArrIdx idx) inp = case inp of
     JArray arr -> Right [getArrayValue (checkNegIdx idx (length arr)) arr]
     _ -> Right []
-
--- Handle (optional) Array/String Slicing
 compile (Slicer start end) inp = case (compile start inp, compile end inp) of
     (Left msg, _) -> Left msg
     (_, Left msg) -> Left msg
     (Right first, Right second) -> case inp of
         JArray _ -> flattenJProgram [getSlice s e inp False | (s, e) <- getCombinations first second]
         JString _ -> flattenJProgram [getSlice s e inp False | (s, e) <- getCombinations first second]
+        JNull -> Right ([JNull] ++ [JNull])
         _ -> Left "Error: Cannot slice non-array/non-object"
 compile (OptSlicer start end) inp = case (compile start inp, compile end inp) of
     (Right first, Right second) -> case inp of
         JArray _ -> flattenJProgram [getSlice s e inp True | (s, e) <- getCombinations first second]
         JString _ -> flattenJProgram [getSlice s e inp True | (s, e) <- getCombinations first second]
+        JNull -> Right [JNull]
         _ -> Right []
     (_, _) -> Right []
-
--- Handle (optional) Array/Object Iterator
 compile (Iterator idxs) inp = case idxs of
     [] -> case inp of
         JArray arr -> Right arr
         JObject obj -> Right (map snd obj) 
+        JNull -> Right [JNull]
         _ -> Left "Error: Cannot iterate over non-array/non-object "
     _ -> case (compile (head idxs) inp) of 
         Left msg -> Left msg
         Right indices -> case inp of
             JArray arr -> getIterateValue indices arr False
             JObject _ -> Left "Error: cannot do partial iteration over object"
+            JNull -> Right [JNull]
             _ -> Left "Error: Cannot iterate over non-array/non-object"
 compile (OptIterator idxs) inp = case idxs of
     [] -> case inp of
         JArray arr -> Right arr
         JObject obj -> Right (map snd obj) 
+        JNull -> Right [JNull]
         _ -> Right []
     _ -> case (compile (head idxs) inp) of 
         Left msg -> Left msg
         Right indices -> case inp of
             JArray arr -> getIterateValue indices arr False
+            JNull -> Right [JNull]
             _ -> Right []
-
--- Handle Comma and Pipe operator
 compile (CommaOperator commaList) inp = handleCommas commaList inp
-compile (PipeOperator (pipe:pipeList)) inp = case compile pipe inp of
-    Right result -> handlePipes pipeList result
+compile (PipeOperator pipeList) inp = case compile (head pipeList) inp of
+    Right result -> handlePipes (tail pipeList) result
     Left msg -> Left msg
+-- Handle advanced Filters
+compile (RecursiveDescent) inp = Right (getRecursiveDescent inp)
+compile (Equal lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+    (Left msg, _) -> Left msg
+    (_, Left msg) -> Left msg
+    (Right result1, Right result2) -> Right [JBool (r1 == r2) | (r1, r2) <- getCombinations result1 result2]
+compile (Unequal lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+    (Left msg, _) -> Left msg
+    (_, Left msg) -> Left msg
+    (Right result1, Right result2) -> Right [JBool (r1 /= r2) | (r1, r2) <- getCombinations result1 result2]
+
+compile (LowerThen lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+    (Left msg, _) -> Left msg
+    (_, Left msg) -> Left msg
+    (Right result1, Right result2) -> Right [JBool (r1 < r2) | (r1, r2) <- getCombinations result1 result2]
+compile (GreaterThen lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+    (Left msg, _) -> Left msg
+    (_, Left msg) -> Left msg
+    (Right result1, Right result2) -> Right [JBool (r1 > r2) | (r1, r2) <- getCombinations result1 result2]
+compile (LowerEq lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+    (Left msg, _) -> Left msg
+    (_, Left msg) -> Left msg
+    (Right result1, Right result2) -> Right [JBool (r1 <= r2) | (r1, r2) <- getCombinations result1 result2]
+compile (GreaterEq lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+    (Left msg, _) -> Left msg
+    (_, Left msg) -> Left msg
+    (Right result1, Right result2) -> Right [JBool (r1 >= r2) | (r1, r2) <- getCombinations result1 result2]
+compile (IfElse{}) _ = Left "ifthenelse not implemented yet"
+-- compile (IfElse cond lexpr rexpr) inp = 
+compile (AndLogic{}) _ = Left "and logic not implemented yet"
+-- compile (AndLogic lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+--     (Left msg, _) -> Left msg
+--     (_, Left msg) -> Left msg
+--     (Right result1, Right result2) -> Right [JBool (handleAnd r1 r2) | (r1, r2) <- getCombinations result1 result2]
+compile (OrLogic{}) _ = Left "or logic not implemented yet"
+-- compile (OrLogic lexpr rexpr) inp = case (compile lexpr inp, compile rexpr inp) of
+--     (Left msg, _) -> Left msg
+--     (_, Left msg) -> Left msg
+--     (Right result1, Right result2) -> Right [JBool (r1 || r2) | (r1, r2) <- getCombinations result1 result2]
+compile (NotLogic) inp = case inp of 
+    JNull       -> Right [JBool True]
+    JBool False -> Right [JBool True]
+    _           -> Right [JBool False]
 
 run :: JProgram [JSON] -> JSON -> Either String [JSON]
 run p j = p j
-
 
 -- Generic combiner of elements of first and second list to create cartesian product list.
 getCombinations :: [a] -> [b] -> [(a, b)]
 getCombinations xs ys = [(x,y) | x <- xs, y <- ys]
 
+-- Combine compiled lists of key and values to single list
+flattenCompiledKeyValues :: [(Either String [JSON], Either String [JSON])] -> [Either String ([JSON], [JSON])]
+flattenCompiledKeyValues [] = []
+flattenCompiledKeyValues ((Left msg1, Left msg2):_) = [Left (msg1 ++ msg2)]
+flattenCompiledKeyValues ((Left msg, Right _):_) = [Left msg]
+flattenCompiledKeyValues ((Right _, Left msg):_) = [Left msg]
+flattenCompiledKeyValues ((Right result1, Right result2):xs) = [Right (result1, result2)] ++ flattenCompiledKeyValues xs
+
+-- Check if a list contains Left
+checkCompileError :: [Either String ([JSON], [JSON])] -> Either String [a]
+checkCompileError [] = Right []
+checkCompileError ((Left msg):_) = Left msg
+checkCompileError ((Right _):xs) = checkCompileError xs
+
+-- Check for every object if their key is valid
+checkAllKeys :: [([JSON], [JSON])] -> Either String [a]
+checkAllKeys [] = Right []
+checkAllKeys ((key, _):xs) = case checkKeys key of
+    Left msg -> Left msg
+    _ -> checkAllKeys xs
+
+-- Check for one object if their key is valid
+checkKeys :: [JSON] -> Either String [a]
+checkKeys [(JString _)] = Right []
+checkKeys ((JString _):xs) = checkKeys xs
+checkKeys _  = Left "Error: cannot index object using non-string key"
+
+-- Change all keys in all objects into from JSON to strings
+convertAllKeys :: [([JSON], [JSON])] -> [([String], [JSON])]
+convertAllKeys [] = []
+convertAllKeys ((key, value):xs) = (convertKeys key, value):convertAllKeys xs
+
+-- Change from one object all JSON keys into String keys
+convertKeys :: [JSON] -> [String]
+convertKeys [JString key] = [key]
+convertKeys ((JString key):xs) = [key] ++ convertKeys xs
+convertKeys _ = []
+
+-- Get cartesian product of all keys and values
+getKeyValuePairs :: [([String], [JSON])] -> [[(String, JSON)]]
+getKeyValuePairs [] = []
+getKeyValuePairs [(keys, values)] = [[(k, v)] | k <- keys, v <- values]
+getKeyValuePairs ((keys, values):xs) = [(k, v):rest | k <- keys, v <- values, rest <- getKeyValuePairs xs]
+
+-- Remove duplicate keys from a list of key value pairs
+removeDuplicateKeys :: [(String, JSON)] -> [String] -> [(String, JSON)]
+removeDuplicateKeys [] _ = []
+removeDuplicateKeys (tuple@(key, _):xs) known = if key `elem` known then removeDuplicateKeys xs known else tuple: removeDuplicateKeys xs (key:known)
 
 -- Gets all elements of the array
 getArrayElements :: [Filter]-> JSON -> Either String [JSON]
@@ -111,19 +215,6 @@ getArrayElements (x:xs) inp = case (compile x inp) of
     Right result1 -> case (getArrayElements xs inp) of
         Left msg -> Left msg
         Right result2 -> Right (result1 ++ result2)
-
-
-getObjectElements :: [(Filter, Filter)] -> JSON -> Either String [JSON]
-getObjectElements []                _       = Right [JObject []]
-getObjectElements [(key, value)]    input   = case (compile key input, compile value input) of
-    (Right [JString chars], Right a) -> let keyvalues = getCombinations [chars] a in Right [JObject [tuple] | tuple <- keyvalues]
-    (_, _) -> Left "Error: invalid key value for object"
-getObjectElements ((key, value):xs) input   = case (getObjectElements [(key, value)] input) of
-    Left  msg    -> Left msg
-    Right result -> case (getObjectElements xs input) of
-        Left  msg     ->  Left msg
-        Right results ->  Right (result ++ results)
-
 
 -- Converts string to floating point number
 convertNumber :: String -> Float
@@ -257,20 +348,7 @@ handleInput f (x:xs) = case (f x) of
         Left msg -> Left msg
         Right results -> Right (result ++ results)
 
-
--- echo '[[4, 5], 1, 2, "bruh", 4, 5]' | jq-clone '.[.[0], .[1]]?'
--- =
--- [4]
--- 1
-
--- echo '[1, 2, 3]' | jq-clone '.[[1, 2]]'
--- [0]
-
--- echo '[0, 1, 2, "lee", "ghandi", 5, "lee", "ghandi"]' | jq-clone '.[["lee", "ghandi"]]'
--- [3, 6]
-
--- echo '[[{"name":"JSON", "good":true}, {"name":"XML", "good":false}]]' | jq-clone '.[][1]["name"], .[]'
-
--- echo '[[{"name":"JSON", "good":true}, {"name":"XML", "good":false}]]' | jq-clone '.[][1]["name"]'
-
--- echo '4' | jq-clone '[1,2,3][]'
+getRecursiveDescent :: JSON -> [JSON]
+getRecursiveDescent input@(JObject obj) = input : (concatMap (getRecursiveDescent . snd) obj)
+getRecursiveDescent input@(JArray arr)  = input : (concatMap getRecursiveDescent arr)
+getRecursiveDescent input               = [input]

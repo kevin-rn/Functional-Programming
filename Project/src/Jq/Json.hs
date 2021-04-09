@@ -1,23 +1,52 @@
 module Jq.Json where
 import Data.List
+import Numeric (showHex)
+import Data.Char (ord)
 
 data JSON =
     JNull
-  | JString { str :: String }
+  | JBool { boolean :: Bool }
   | JNumber { number :: Integer, fract :: [Int], exp :: Integer }
-  | JBool { boolean :: Bool } 
+  | JString { str :: String }
   | JObject { pairs :: [(String, JSON)]}
   | JArray { list :: [JSON] }
 
+-- Instance for Equality
 instance Eq JSON where
-  (JString a)       == (JString b)       = a == b
-  (JNumber a f1 e1) == (JNumber b f2 e2) = a == b && f1 == f2 && e1 == e2
-  (JBool a)         == (JBool b)         = a == b
-  (JObject a)       == (JObject b)       = a == b
-  (JArray a)        == (JArray b)        = a == b
-  JNull             == JNull             = True 
-  _                 == _                 = False
+  JNull              == JNull              = True
+  (JBool b1)         == (JBool b2)         = b1 == b2
+  (JNumber n1 f1 e1) == (JNumber n2 f2 e2) = (n1 == n2) && (f1 == f2) && (e1 == e2)
+  (JString s1)       == (JString s2)       = s1 == s2
+  (JArray a1)        == (JArray a2)        = a1 == a2
+  (JObject o1)       == (JObject o2)       = o1 == o2
+  _                  == _                  = False
 
+-- Instance for Order
+instance Ord JSON where
+  JNull               <= JNull              = True
+  JNull               <= JBool{}            = True
+  JNull               <= JNumber{}          = True
+  JNull               <= JString{}          = True
+  JNull               <= JArray{}           = True
+  JNull               <= JObject{}          = True
+  (JBool b1)          <= (JBool b2)         = b1 <= b2
+  JBool{}             <= JString{}          = True
+  JBool{}             <= JNumber{}          = True
+  JBool{}             <= JArray{}           = True
+  JBool{}             <= JObject{}          = True
+  (JNumber n1 f1 e1)  <= (JNumber n2 f2 e2) = (n1 <= n2) && (f1 <= f2) && (e1 <= e2)
+  JNumber{}           <= JString{}          = True
+  JNumber{}           <= JArray{}           = True
+  JNumber{}           <= JObject{}          = True
+  (JString s1)        <= (JString s2)       = s1 <= s2
+  JString{}           <= JArray{}           = True
+  JString{}           <= JObject{}          = True
+  (JArray a1)         <= (JArray a2)        = a1 <= a2
+  JArray{}            <= JObject{}          = True
+  (JObject o1)        <= (JObject o2)       = o1 <= o2
+  _                   <= _                  = False
+
+--Instance for show
 instance Show JSON where
   show (JNull)          = "null"
   show (JString s)      = "\"" ++ concatMap showJSonChar s ++ "\""
@@ -52,7 +81,9 @@ showJSonChar '\'' = "'"       -- reverse solidus
 showJSonChar '\\' = "\\\\"    -- slash
 showJSonChar '\"' =  "\\\""   -- quotation mark
 showJSonChar '/' = "\\/"      -- solidus
-showJSonChar s = [s]          -- string
+showJSonChar s
+  | s `elem` ['\0' .. '\31'] = let chars = "0000" ++ (showHex (ord s) "") in "\\u" ++ (drop (length chars - 4) chars)  --Unicode character
+  | otherwise                = [s]          -- string
 
 -- Used to pretty print the strings of the Show method.
 addSpace :: String -> String
