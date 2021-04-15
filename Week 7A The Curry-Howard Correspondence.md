@@ -128,13 +128,10 @@ test-prop2 = refl
 
 ### Solution:
 ```haskell
-open import Agda.Builtin.Equality
+open import library
 
-test-prop2-type : {A : Set} → (A × ⊤) → Either A ⊥
-test-prop2-type = prop2
-
-test-prop2 : {A : Set} {x : A} → prop2 (x , tt) ≡ left x
-test-prop2 = refl
+prop2 : {A : Set} → (A × ⊤) → Either A ⊥
+prop2 = λ x → left (fst x)
 ```
 
 _______________________________________________________________________________________________________________________________________________
