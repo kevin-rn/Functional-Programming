@@ -1,9 +1,10 @@
-
+### Question 1 Theory Question
 
 Suppose that you have been invided to write an article for a professional computing magazine on the benefits that pure functional programming brings to programmers.   
 Give a list of at least 5 benefits that you would mention, and illustrate each of the benefits with a small example written in Haskell.
 (Note that this is the same question as on the practice exam, this is not a mistake.)
 
+```
 1) There are no side effects to any function, easier to contain effects of a function e.g.
 
 x = 1
@@ -28,3 +29,37 @@ loop a = a : loop a
 head [1..] returns 1
 
 5) It supports higher order functions, meaning its possible to pass one function onto another, e.g. map (+1) [1..5] will add 1 to every element of the list
+```
+________________________________________________________________________________________________________________________________________
+
+### Question 2 Multiple choice
+
+
+________________________________________________________________________________________________________________________________________
+
+### Question 3 Defining and testing functions
+
+
+________________________________________________________________________________________________________________________________________
+
+### Question 4 Data types and type classes
+
+________________________________________________________________________________________________________________________________________
+
+### Question 5 Functors, Applicative, Monads
+
+________________________________________________________________________________________________________________________________________
+
+### Question 6 Laziness
+
+________________________________________________________________________________________________________________________________________
+
+### Question 7 The Curry-Howard correspondence
+
+________________________________________________________________________________________________________________________________________
+
+### Question 8 Equational reasoning
+
+
+
+
