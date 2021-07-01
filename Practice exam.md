@@ -38,20 +38,35 @@ ________________________________________________________________________________
 
 ### Question 2: Multiple Choice Questions
 1. Which of the following statements is true for all finite lists xs and functions f and g of the right types?
-`map f (map g xs) = map g (map f xs)   -  reverse (reverse xs) = reverse xs    -   reverse xs = xs   -   map f (map f xs) = map f xs    - [reverse (map f xs) = map f (reverse xs)]`
+```haskell
+[ ] `map f (map g xs) = map g (map f xs)     
+[ ] reverse (reverse xs) = reverse xs    
+[ ] reverse xs = xs   
+[ ] map f (map f xs) = map f xs    
+[x] reverse (map f xs) = map f (reverse xs)
 
 2. A function of type (Int -> Int) -> Int:
-Takes two arguments as inputs. - Takes a pair of arguments as input. - Returns a pair of results. - Returns a function as a result. - [Takes a function as its argument.]
+[ ] Takes two arguments as inputs. 
+[ ] Takes a pair of arguments as input. 
+[ ] Returns a pair of results. 
+[ ] Returns a function as a result. 
+[x] Takes a function as its argument.
 
 3. Which of the following equations does NOT hold for all functions f and non-negative numbers n?
-`map f . reverse = reverse . map f   -   [map f . sort = sort . map f]  -  map f . drop n = drop n . map f  -  map f . take n = take n . map f`
+[ ] map f . reverse = reverse . map f   
+[x] map f . sort = sort . map f]  
+[ ] map f . drop n = drop n . map f  
+[ ] map f . take n = take n . map f
 
 4. Which of the following statements about Haskell is false:
-Function application associates to the left.   -  All type errors are detected at compile time.    -    [All functions are guaranteed to terminate.]  -  Recursive functions can have more than one base case.
+[ ] Function application associates to the left.   
+[ ] All type errors are detected at compile time.    
+[x] All functions are guaranteed to terminate.  
+[ ] Recursive functions can have more than one base case.
 
 5. How many distinct elements are there in the Agda type Vec Bool 3?
 0 - 1 - 2 - 3 - 6 - [8] - 9
-
+```
 ____________________________________________________________________________________________________________________________________________________________________
 
 ### Question 3: Defining and testing functions
