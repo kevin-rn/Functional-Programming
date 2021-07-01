@@ -863,5 +863,102 @@ test-proof-double = refl
 test-proof-triple : proof (1 :: 2 :: 3 :: []) (1 :: 2 :: 3 :: []) ≡ refl
 test-proof-triple = refl
 ```
+-- Library
+```haskell
+data Nat : Set where
+  zero : Nat
+  suc  : (n : Nat) → Nat
+{-# BUILTIN NATURAL Nat #-}
 
+_+_ : Nat → Nat → Nat
+zero  + m = m
+suc n + m = suc (n + m)
+infixl 6 _+_
+
+data List (A : Set) : Set where
+  []   : List A
+  _::_ : A → List A → List A
+infixr 5 _::_
+
+_++_ : {A : Set} → List A → List A → List A
+[] ++ ys = ys
+(x :: xs) ++ ys = x :: (xs ++ ys)
+
+sum : List Nat → Nat
+sum []        = 0
+sum (x :: xs) = x + sum xs
+
+data _≡_ {A : Set} : A → A → Set where
+  refl : {x : A} → x ≡ x
+
+infix 4 _≡_
+
+-- symmetry of equality
+sym : {A : Set} {x y : A} → x ≡ y → y ≡ x
+sym refl = refl
+
+-- transitivity of equality
+trans : {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+trans refl refl = refl
+
+-- congruence of equality
+cong : {A B : Set} {x y : A} → (f : A → B) → x ≡ y → f x ≡ f y
+cong f refl = refl
+
+begin_ : {A : Set} → {x y : A} → x ≡ y → x ≡ y
+begin p = p
+
+_end : {A : Set} → (x : A) → x ≡ x
+x end = refl
+
+_=⟨_⟩_ : {A : Set} → (x : A) → {y z : A}
+       → x ≡ y → y ≡ z → x ≡ z
+x =⟨ p ⟩ q = trans p q
+
+_=⟨⟩_ : {A : Set} → (x : A) → {y : A} → x ≡ y → x ≡ y
+x =⟨⟩ q = x =⟨ refl ⟩ q
+
+infix   1  begin_
+infix   3  _end
+infixr  2  _=⟨_⟩_
+infixr  2  _=⟨⟩_
+
+add-assoc : (x y z : Nat) → x + (y + z) ≡ (x + y) + z
+add-assoc zero y z =
+  begin
+    zero + (y + z)
+  =⟨⟩                              -- applying the outer +
+    y + z
+  =⟨⟩                              -- unapplying add
+    (zero + y) + z
+  end
+add-assoc (suc x) y z =
+  begin
+    (suc x) + (y + z)
+  =⟨⟩                              -- applying the outer add
+    suc (x + (y + z))
+  =⟨ cong suc (add-assoc x y z) ⟩  -- using induction hypothesis
+    suc ((x + y) + z)
+  =⟨⟩                              -- unapplying the outer add
+    (suc (x + y)) + z
+  =⟨⟩                              -- unapplying the inner add
+    ((suc x) + y) + z
+  end
+  
+  
+-- Use these type synonyms if you want to avoid unicode:
+
+_==_ : {A : Set} → A → A →  Set
+x == y = x ≡ y
+
+_=<_>_ : {A : Set} → (x : A) → {y z : A} → x ≡ y → y ≡ z → x ≡ z
+x =< p > q = x =⟨ p ⟩ q 
+
+_=<>_ : {A : Set} → (x : A) → {y : A} → x ≡ y → x ≡ y
+x =<> q = x =⟨⟩ q
+
+
+infixr  2  _=<_>_
+infixr  2  _=<>_
+```
 
