@@ -75,7 +75,7 @@ How many elements are there in the Agda type Vec (Fin 2) 5?
 [ ] 1
 [ ] 2
 [ ] 5
-[ ] 10
+[x] 10
 [ ] 25
 [ ] 32
 
