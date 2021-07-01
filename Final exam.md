@@ -4,7 +4,7 @@ Suppose that you have been invided to write an article for a professional comput
 Give a list of at least 5 benefits that you would mention, and illustrate each of the benefits with a small example written in Haskell.
 (Note that this is the same question as on the practice exam, this is not a mistake.)
 
-```
+```haskell
 1) There are no side effects to any function, easier to contain effects of a function e.g.
 
 x = 1
@@ -86,7 +86,7 @@ ________________________________________________________________________________
 ### Question 3 Defining and testing functions
 Given a list of values of some type a that implements the Ord type class, the local extrema are the values that are either strictly bigger or strictly smaller than the numbers immediately before or after them. The goal of this question is to implement two different versions of the function localExtrema :: Ord a => [a] -> [a] that returns the list of all local extrema in a given list. The first and last elements of a list are never considered to be local extrema.
 
-```
+```haskell
 Examples:
 localExtrema [] = []
 localExtrema [0,1,0] = [1]
@@ -100,7 +100,7 @@ Given a list of values of some type a that implements the Ord type class, the lo
 First, implement localExtrema using explicit pattern matching on lists and recursion. (Update: using guards or if then else is also allowed)
 Clarification. Here you should only implement one version of localExtrema. The second one will be in subquestion 3C.
 
-```
+```haskell
 localExtrema :: Ord a => [a] -> [a]
 localExtrema [] = []
 localExtrema [x] = []
@@ -133,7 +133,7 @@ prop_localExtrema_test6 = localExtrema [1,2,3,3,3,2,1] == []
 Next, implement a helper function triplets :: [a] -> [(a,a,a)] that computes the list of all adjacents triplets in the list. For example, triplets [1,2,3,4,5] = [(1,2,3),(2,3,4),(3,4,5)]. This function should be implemented using library functions on lists. It should NOT use pattern matching or list comprehensions.
 Clarification. Your solution should also not use guards.
 
-```
+```haskell
 triplets :: [a] -> [(a,a,a)]
 triplets xs = map (\(c1, (c2, c3)) -> (c1, c2, c3)) (zip xs (zip (tail xs) (tail (tail xs))))
 
@@ -157,7 +157,7 @@ prop_triplets_correct xs = triplets xs === triplets_spec xs
 Now implement the second version of the function localExtrema', using a list comprehension together with the helper function triplets you defined in the previous part (you do not need to redefine it here). Your solution here should not use pattern matching or recursion.
 Clarification. It is allowed to match on the result of a generator (on the left of an <-) in the list comprehension.
 
-```
+```haskell
 localExtrema' :: Ord a => [a] -> [a]
 localExtrema' xs = [ y | (x,y,z) <- triplets xs, (x < y && y > z) || (x > y && y < z) ]
 
@@ -189,7 +189,7 @@ prop_localExtrema'_correct xs = localExtrema' xs === localExtrema'_spec xs
 
 Finally, implement a QuickCheck test prop_localExtrema that tests that the two versions localExtrema and localExtrema' of the function always produce the same output (again, you do not need to redefine the functions here).
 
-```
+```haskell
 prop_localExtrema :: [Int] -> Property
 prop_localExtrema xs = localExtrema xs === localExtrema' xs
 ```
@@ -198,7 +198,9 @@ ________________________________________________________________________________
 ### Question 4 Data types and type classes
 
 A trie is a data structure for efficiently representing a (finite) set of strings. In Haskell, we can define the datatype Trie as follows:
-``` data Trie = Node Bool [(Char,Trie)] ```
+```haskell 
+data Trie = Node Bool [(Char,Trie)] 
+```
 A trie Trie b ts describes the set of strings A such that:
 
 The boolean b is true if the empty string "" belongs to A.
@@ -206,7 +208,7 @@ The list ts consists of the tuples ('c',t) such that (1) at least one string in 
 In particular, the list ts should contain at most one tuple (c,t) for each character c.
 
 For example, the following is a trie that represents the set {"foo","bar","baz"}
-```
+```haskell
 Node False [('f', Node False [('o', Node False [('o', Node True [])])])
            ,('b', Node False [('a', Node False [('r', Node True [])
                                                ,('z', Node True [])])])
@@ -215,7 +217,7 @@ Node False [('f', Node False [('o', Node False [('o', Node True [])])])
 For this assignment, you are asked to implement several functions on tries. Each function is described in its own sub-assignment.
 
 First, define the trie myTrie :: Trie that represents the set {"","a","ab","ba"}.
-```
+```haskell
 myTrie :: Trie
 myTrie = Node True [ ('a', Node True  [('b', Node True [])])
                    , ('b', Node False [('a', Node True [])])
@@ -247,7 +249,7 @@ prop_myTrie_other s = elemTrie_spec s myTrie == (s == "" || s == "a" || s == "ab
 
 Now implement a function singletonTrie :: String -> Trie that constructs a trie representing the singleton set {s} containing only the given string.
 
-```
+```haskell
 singletonTrie :: String -> Trie
 singletonTrie [] = Node True []
 singletonTrie (x:xs) = Node False [(x, singletonTrie xs)]
@@ -284,7 +286,7 @@ Implement a function elemTrie :: String -> Trie -> Bool for checking whether a s
 
 Hint. The standard prelude function lookup may come in handy.
 
-```
+```haskell
 elemTrie :: String -> Trie -> Bool
 elemTrie "" (Node b _) = b
 elemTrie (x:xs) (Node _ []) = False
@@ -368,7 +370,7 @@ prop_elemTrie_correct s t = elemTrie s t === elemTrie_spec s t
 Define the empty trie emptyTrie :: Trie that represents the empty set {}, and the function mergeTrie :: Trie -> Trie -> Trie for merging two tries (taking the union of the two sets). Pay attention to the fact that the list of tuples in a trie should never contain two tuples with the same character as the first component!
 Also make Trie into an instance of the Semigroup and Monoid type classes, using the functions you defined above.
 
-```
+```haskell
 emptyTrie :: Trie
 emptyTrie = Node False []
 
@@ -504,7 +506,7 @@ prop_merge_chars =
 
 State the three laws of the Monoid type class, and explain briefly why the first one is satisfied by your definition of Monoid Trie.
 
-```
+```haskell
 The three laws are the following:
 
 mempty <> t2 == t2
@@ -534,16 +536,18 @@ ________________________________________________________________________________
 
 Consider the following data type for keeping track of whether a value is “clean” or “dirty”:
 
-``` data MaybeDirty a = Clean a | Dirty a ```
-First, define instances for making this type into a Functor, Applicative, and Monad. For the Applicative instance, pure should return a clean value, and the result of combining two values should be dirty if either of the values is dirty. For example:
+```haskell 
+data MaybeDirty a = Clean a | Dirty a 
 ```
+First, define instances for making this type into a Functor, Applicative, and Monad. For the Applicative instance, pure should return a clean value, and the result of combining two values should be dirty if either of the values is dirty. For example:
+```haskell
 prop_ap_test1 = (pure (,) <*> Clean 1 <*> Clean 2)  ==  Clean (1,2)
 prop_ap_test2 = (pure (,) <*> Dirty 1 <*> Clean 2)  ==  Dirty (1,2)
 prop_ap_test3 = (pure (,) <*> Clean 1 <*> Dirty 2)  ==  Dirty (1,2)
 prop_ap_test4 = (pure (,) <*> Dirty 1 <*> Dirty 2)  ==  Dirty (1,2)
 ```
 Now use do-notation to implement a function addDirty :: (Ord a, Num a) => MaybeDirty a -> MaybeDirty a -> MaybeDirty a that adds together two values and marks the result as dirty if either one of the inputs is dirty, or if the result is negative. For example:
-```
+```haskell
 addDirty (Dirty 1) (Clean 2) == Dirty 3
 addDirty (Clean 1) (Clean 2) == Clean 3
 addDirty (addDirty (Clean 1) (Clean (-2))) (Clean 3) == Dirty 2
@@ -551,7 +555,7 @@ addDirty (addDirty (Clean 1) (Clean (-2))) (Clean 3) == Dirty 2
 Your implementation of addDirty should only use do notation and should not pattern match on the constructors Clean and Dirty directly or make use of helper functions that do so.
 
 Clarification. Unfortunately there’s some syntax errors in the user tests (which cannot be updated at this point). Here is an updated version that you can copy-paste into the Test tab:
-```
+```haskell
 prop_ap_test1 = (pure (,) <*> Clean 1 <*> Clean 2)  ==  Clean (1,2)
 prop_ap_test2 = (pure (,) <*> Dirty 1 <*> Clean 2)  ==  Dirty (1,2)
 prop_ap_test3 = (pure (,) <*> Clean 1 <*> Dirty 2)  ==  Dirty (1,2)
@@ -563,7 +567,7 @@ prop_addDirty_test3 = addDirty (addDirty (Clean 1) (Clean (-2))) (Clean 3) == Di
 ```
 
 
-```
+```haskell
 markDirty :: MaybeDirty a -> MaybeDirty a
 markDirty (Clean x) = Dirty x
 markDirty (Dirty x) = Dirty x
@@ -590,7 +594,7 @@ addDirty mx my = do
 ```
 
 -- Test:
-```
+```haskell
 markDirty_spec :: MaybeDirty a -> MaybeDirty a
 markDirty_spec (Clean x) = Dirty x
 markDirty_spec (Dirty x) = Dirty x
@@ -676,7 +680,7 @@ ________________________________________________________________________________
 
 ### Question 6 Laziness
 Consider two definitions of the function fac :: Int -> Int:
-```
+```haskell
   fac 0 = 1
   fac n = n * fac (n - 1)
   
@@ -692,7 +696,7 @@ Write down the evaluation sequences for fac' 3 under innermost reduction and out
 How would you modify the definition of fac' to improve its performance under the lazy evaluation strategy of Haskell? (2 points)
 
 Innermost reduction of fac 3:
-```
+```haskell
 fac 3 --> 3 * fac (3 - 1)
       --> 3 * fac 2
       --> 3 * (2 * fac (2 - 1))
@@ -705,7 +709,7 @@ fac 3 --> 3 * fac (3 - 1)
       --> 6
 ```
 Outermost reduction of fac 3:
-```
+```haskell
 fac 3 --> 3 * fac (3 - 1)
       --> 3 * fac 2
       --> 3 * (2 * fac (2 - 1))
@@ -720,7 +724,7 @@ fac 3 --> 3 * fac (3 - 1)
 For fac, the choice of evaluation strategy does not matter.
 
 Innermost reduction of fac' 3:
-```
+```haskell
 fac' 3 --> accum 1 3
        --> accum (1*3) (3-1)
        --> accum 3 (3-1)
@@ -734,7 +738,7 @@ fac' 3 --> accum 1 3
        --> 6
 ```
 Outermost reduction of fac' 3:
-```
+```haskell
 fac' 3 --> accum 1 3
        --> accum (1*3) (3-1)
        --> accum (1*3) 2
@@ -750,7 +754,7 @@ fac' 3 --> accum 1 3
 For fac' the number of evaluation steps is still the same under both strategies, but the size of intermediate expressions is much smaller under innermost reduction.
 
 You can use the strict application operator ($!) to make accum strict in its first argument:
-```
+```haskell
   fac' n = accum 1 n
     where
 	  accum x 0 = x
@@ -767,7 +771,7 @@ Prove both statements by implementing an Agda function of the translated types.
 
 Note. The unicode support in Weblab is not very good. We recommend you to either use an external editor, or use the variant names defined at the bottom of the library file (and use -> instead of →).
 
-```
+```haskell
 open import library
 
 proof1 : {A B : Set} → (A → ⊥) × (B → ⊥) → Either A B → ⊥
@@ -811,7 +815,7 @@ Hint. For this proof, you will need to rely on the associativity of addition, wh
 Note. The unicode support in Weblab is not very good. We recommend you to either use an external editor and copy-paste your solution here, or use the variant names defined at the bottom of the library file (and use -> instead of →).
 
 
-```
+```haskell
 open import library
 
 proof : (xs ys : List Nat) → sum (xs ++ ys) ≡ sum xs + sum ys
@@ -841,7 +845,7 @@ proof (x :: xs) ys =
   end
 ```
 -- Test
-```
+```haskell
 open import library
 
 test-proof-type : (xs ys : List Nat) → sum (xs ++ ys) ≡ sum xs + sum ys
