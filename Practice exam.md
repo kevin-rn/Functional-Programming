@@ -37,8 +37,8 @@ foo (x:xs) = x : foo xs
 ____________________________________________________________________________________________________________________________________________________________________
 
 ### Question 2: Multiple Choice Questions
-1. Which of the following statements is true for all finite lists xs and functions f and g of the right types?
 ```haskell
+1. Which of the following statements is true for all finite lists xs and functions f and g of the right types?
 [ ] `map f (map g xs) = map g (map f xs)     
 [ ] reverse (reverse xs) = reverse xs    
 [ ] reverse xs = xs   
