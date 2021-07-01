@@ -45,7 +45,7 @@ Here are some benefits (not an exhaustive list):
 ________________________________________________________________________________________________________________________________________
 
 ### Question 2 Multiple choice
-```
+```haskell
 Which of the following definitions of concat correctly transforms a list of lists into a single list?
 [ ] concat yss = [y | y <- yss]
 [ ] concat yss = concat (tail yss)
