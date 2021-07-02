@@ -765,7 +765,7 @@ ________________________________________________________________________________
 ### Question 7 The Curry-Howard correspondence
 Translate the following propositions to Agda types using the Curry-Howard correspondence:
 
-If (not A) and (not B) then not (A or B)
+If (not A) and (not B) then not (A or B)  
 If not (A or B) then (not A) and (not B)
 Prove both statements by implementing an Agda function of the translated types.
 
